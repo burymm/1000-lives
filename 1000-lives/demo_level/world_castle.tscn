@@ -1,19 +1,21 @@
-[gd_scene load_steps=29 format=3 uid="uid://uiw1spc0mevb"]
+[gd_scene format=3 uid="uid://uiw1spc0mevb"]
 
 [ext_resource type="PackedScene" uid="uid://bn7vh6v8mmgja" path="res://player/player_charbody3d.tscn" id="1_70e33"]
 [ext_resource type="PackedScene" uid="uid://cnv210lnfdoan" path="res://interactable objects/doors/door_object.tscn" id="2_4fq4l"]
 [ext_resource type="PackedScene" uid="uid://bp5aql2ip2qwi" path="res://interactable objects/doors/gate_object.tscn" id="3_0mbes"]
 [ext_resource type="PackedScene" uid="uid://b5y7f5xgkpa1d" path="res://interactable objects/ladder/ladder.tscn" id="4_a4kod"]
 [ext_resource type="PackedScene" uid="uid://c3yajhej5laa7" path="res://interactable objects/chest/chest.tscn" id="5_b73po"]
-[ext_resource type="Script" path="res://enemy/patrol_point.gd" id="6_i73lt"]
+[ext_resource type="Script" uid="uid://d1bmo18sy3q4o" path="res://enemy/patrol_point.gd" id="6_i73lt"]
 [ext_resource type="PackedScene" uid="uid://bbhrq4snasi1i" path="res://demo_level/stagingCSG.tscn" id="7_p8o0k"]
 [ext_resource type="PackedScene" uid="uid://daae7mgofoegu" path="res://interactable objects/spawn_site/spawn_site.tscn" id="9_cpxbt"]
 [ext_resource type="PackedScene" uid="uid://cev0hfdkmno27" path="res://interactable objects/lever/lever_object.tscn" id="10_10w6y"]
-[ext_resource type="Script" path="res://ui/contol_card.gd" id="11_4norq"]
+[ext_resource type="Script" uid="uid://dqievchiqnbn" path="res://ui/contol_card.gd" id="11_4norq"]
 [ext_resource type="Texture2D" uid="uid://c46nfvbeeb3pr" path="res://ui/panel-border-027.png" id="12_1f7l8"]
-[ext_resource type="Script" path="res://cameras/area_cam/area_cam.gd" id="13_2aall"]
+[ext_resource type="Script" uid="uid://cpb7cmsu44cld" path="res://cameras/area_cam/area_cam.gd" id="13_2aall"]
 [ext_resource type="AudioStream" uid="uid://ddfdcmyfdq6fi" path="res://audio/bone_in_the_walls__level_loop_session.ogg" id="14_wsft0"]
 [ext_resource type="PackedScene" uid="uid://cq2lr6sclvutj" path="res://enemy/enemy_base_root_motion.tscn" id="15_yac72"]
+[ext_resource type="PackedScene" path="res://player/item_system/items/bread.tscn" id="16_bread"]
+[ext_resource type="Resource" uid="uid://l1cbep47h18j" path="res://player/item_system/items/bread.tres" id="17_bread"]
 
 [sub_resource type="Gradient" id="Gradient_sxwq5"]
 colors = PackedColorArray(0.00282093, 0.0124845, 0.103078, 1, 0.742305, 0.387089, 0.172949, 1)
@@ -23,10 +25,10 @@ colors = PackedColorArray(0.00282093, 0.0124845, 0.103078, 1, 0.742305, 0.387089
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_p013g"]
 width = 1024
 height = 1024
-in_3d_space = true
-seamless = true
-color_ramp = SubResource("Gradient_sxwq5")
 noise = SubResource("FastNoiseLite_pcllx")
+color_ramp = SubResource("Gradient_sxwq5")
+seamless = true
+in_3d_space = true
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_83frg"]
 sky_top_color = Color(0.27451, 0.329412, 0.407843, 1)
@@ -90,12 +92,12 @@ colors = PackedColorArray(0, 0, 0, 0.670588)
 gradient = SubResource("Gradient_f4sec")
 width = 8
 
-[node name="World" type="Node3D"]
+[node name="World" type="Node3D" unique_id=2111036962]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1864023280]
 environment = SubResource("Environment_eed6x")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1431548390]
 transform = Transform3D(0.931575, 0.347216, 0.107748, 0.183751, -0.70543, 0.684547, 0.313694, -0.617908, -0.720962, 0, 0, 0)
 light_energy = 0.515
 light_indirect_energy = 0.0
@@ -103,7 +105,7 @@ shadow_enabled = true
 directional_shadow_mode = 0
 sky_mode = 1
 
-[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="." unique_id=989909314]
 transform = Transform3D(-0.139173, 0.312577, -0.939642, 0, 0.948876, 0.315649, 0.990268, 0.0439298, -0.132058, -2.974, 0.247, 4.334)
 light_color = Color(0.741176, 0.286275, 0.12549, 1)
 light_energy = 5.93
@@ -111,150 +113,183 @@ light_angular_distance = 5.58
 shadow_enabled = true
 directional_shadow_mode = 1
 
-[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=2023412738]
 navigation_mesh = SubResource("NavigationMesh_8axki")
 
-[node name="Staging" parent="NavigationRegion3D" instance=ExtResource("7_p8o0k")]
+[node name="Staging" parent="NavigationRegion3D" unique_id=1938958405 instance=ExtResource("7_p8o0k")]
 
-[node name="PlayerCharacterBodySoulsBase" parent="." instance=ExtResource("1_70e33")]
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="NavigationRegion3D" unique_id=579094475]
+navigation_mesh = SubResource("NavigationMesh_8axki")
+
+[node name="Staging" parent="NavigationRegion3D/NavigationRegion3D" unique_id=603047535 instance=ExtResource("7_p8o0k")]
+
+[node name="PlayerCharacterBodySoulsBase" parent="." unique_id=2128974078 instance=ExtResource("1_70e33")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.50545, 0, 2.39099)
 
-[node name="AreaCam" type="Area3D" parent="."]
+[node name="BreadPickup" parent="." unique_id=2147400001 instance=ExtResource("16_bread")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0.07, 4.5)
+item_resource = ExtResource("17_bread")
+
+[node name="BreadPickup2" parent="." unique_id=2147400002 instance=ExtResource("16_bread")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0.07, 1.6)
+item_resource = ExtResource("17_bread")
+
+[node name="BreadPickup3" parent="." unique_id=2147400003 instance=ExtResource("16_bread")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.2, 0.07, 3.4)
+item_resource = ExtResource("17_bread")
+
+[node name="AreaCam" type="Area3D" parent="." unique_id=2066192839]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.1214, 1.19209e-07, -0.0681903)
 collision_layer = 0
 collision_mask = 2
 script = ExtResource("13_2aall")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="AreaCam"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AreaCam" unique_id=419399974]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.23262, 1, 2.59018)
 shape = SubResource("BoxShape3D_m6vf8")
 
-[node name="Pivot" type="Marker3D" parent="AreaCam"]
+[node name="Pivot" type="Marker3D" parent="AreaCam" unique_id=1723171267]
 
-[node name="Camera3D" type="Camera3D" parent="AreaCam/Pivot"]
+[node name="Camera3D" type="Camera3D" parent="AreaCam/Pivot" unique_id=1058799137]
 transform = Transform3D(-0.894935, -0.0116801, 0.446045, 0, 0.999658, 0.0261769, -0.446198, 0.0234267, -0.894627, 0.39, 2.64, -2.37)
 
-[node name="Enemies" type="Node" parent="."]
+[node name="Enemies" type="Node" parent="." unique_id=1699594666]
 
-[node name="EnemyBase" parent="Enemies" node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
+[node name="EnemyBase" parent="Enemies" unique_id=1811915122 node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
 transform = Transform3D(-2.06632e-07, 0, 1, 0, 1, 0, -1, 0, -2.06632e-07, -10.4693, -4.76837e-07, 23.7447)
 default_target = NodePath("../PatrolPath/EnemyPatrolPoint")
 
-[node name="EnemyBase2" parent="Enemies" instance=ExtResource("15_yac72")]
+[node name="EnemyBase2" parent="Enemies" unique_id=1275004800 instance=ExtResource("15_yac72")]
 transform = Transform3D(2.98023e-08, 0, 1, 0, 1, 0, -1, 0, 2.98023e-08, -1.23949, -4.76837e-07, 23.9472)
 
-[node name="EnemyBase3" parent="Enemies" instance=ExtResource("15_yac72")]
+[node name="EnemyBase3" parent="Enemies" unique_id=1178840510 instance=ExtResource("15_yac72")]
 transform = Transform3D(-0.518131, 0, 0.855301, 0, 1, 0, -0.855301, 0, -0.518131, -35.9215, 3.8271, 16.6378)
 
-[node name="EnemyBase4" parent="Enemies" instance=ExtResource("15_yac72")]
+[node name="EnemyBase4" parent="Enemies" unique_id=124026364 instance=ExtResource("15_yac72")]
 transform = Transform3D(0.566751, 0, 0.823889, 0, 1, 0, -0.823889, 0, 0.566751, -36.0567, 3.8271, 14.7454)
 
-[node name="EnemyBase5" parent="Enemies" node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
+[node name="EnemyBase5" parent="Enemies" unique_id=1841706779 node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -45.5802, 3.8271, 13.8269)
 default_target = NodePath("../PatrolArea2/PatrolPoint2")
 
-[node name="EnemyBase6" parent="Enemies" instance=ExtResource("15_yac72")]
+[node name="EnemyBase6" parent="Enemies" unique_id=613222855 instance=ExtResource("15_yac72")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.0326, 9, 10.6311)
 
-[node name="EnemyBase7" parent="Enemies" instance=ExtResource("15_yac72")]
+[node name="EnemyBase7" parent="Enemies" unique_id=1056273952 instance=ExtResource("15_yac72")]
 transform = Transform3D(-0.997653, 0, 0.068468, 0, 1, 0, -0.068468, 0, -0.997653, -27.273, 0, 21.48)
 
-[node name="EnemyBase8" parent="Enemies" node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
+[node name="EnemyBase8" parent="Enemies" unique_id=1535015546 node_paths=PackedStringArray("default_target") instance=ExtResource("15_yac72")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.7816, 14, 0.487746)
 default_target = NodePath("../Path3D/PatrolPoint")
 
-[node name="EnemyBase9" parent="Enemies" instance=ExtResource("15_yac72")]
+[node name="EnemyBase9" parent="Enemies" unique_id=1008258828 instance=ExtResource("15_yac72")]
 transform = Transform3D(0.0685725, 0, 0.997646, 0, 1, 0, -0.997646, 0, 0.0685725, -60.3035, 52, 29.9481)
 
-[node name="PatrolPath" type="Path3D" parent="Enemies"]
+[node name="PatrolPath" type="Path3D" parent="Enemies" unique_id=1856678104]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.4471, 0, 30.6534)
 curve = SubResource("Curve3D_2c2rs")
 
-[node name="EnemyPatrolPoint" type="PathFollow3D" parent="Enemies/PatrolPath"]
-transform = Transform3D(0.999734, 0, -0.0225164, 0, 1, 0, 0.0225164, 0, 0.999734, -0.43294, 0, -0.97773)
+[node name="EnemyPatrolPoint" type="PathFollow3D" parent="Enemies/PatrolPath" unique_id=931426795]
+transform = Transform3D(0.9997332, 0, -0.022516401, 0, 1, 0, 0.022516401, 0, 0.9997332, -0.43294, 0, -0.97773)
 script = ExtResource("6_i73lt")
 
-[node name="PatrolArea2" type="Path3D" parent="Enemies"]
+[node name="PatrolArea2" type="Path3D" parent="Enemies" unique_id=173112507]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -42.8878, 3.9, 15.5108)
 curve = SubResource("Curve3D_h7gp6")
 
-[node name="PatrolPoint2" type="PathFollow3D" parent="Enemies/PatrolArea2"]
-transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -1.53429, 2.81334e-05, 6.36466)
+[node name="PatrolPoint2" type="PathFollow3D" parent="Enemies/PatrolArea2" unique_id=1141398522]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -1.53429, 2.81334e-05, 6.36466)
 script = ExtResource("6_i73lt")
 
-[node name="Path3D" type="Path3D" parent="Enemies"]
+[node name="Path3D" type="Path3D" parent="Enemies" unique_id=2084945088]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -36.7816, 14, 0.487746)
 curve = SubResource("Curve3D_2r1aj")
 
-[node name="PatrolPoint" type="PathFollow3D" parent="Enemies/Path3D"]
-transform = Transform3D(-0.0143702, 0.00307455, 0.999892, 0, 0.999995, -0.00307487, -0.999897, -4.41865e-05, -0.0143702, 0, 0, 0)
+[node name="PatrolPoint" type="PathFollow3D" parent="Enemies/Path3D" unique_id=1350882830]
+transform = Transform3D(-0.014370233, 0.0030745494, 0.99989206, 0, 0.999995, -0.0030748677, -0.999897, -4.4186538e-05, -0.014370161, 0, 0, 0)
 script = ExtResource("6_i73lt")
 
-[node name="Interactables" type="Node" parent="."]
+[node name="Interactables" type="Node" parent="." unique_id=746969668]
 
-[node name="ChestObject" parent="Interactables" instance=ExtResource("5_b73po")]
+[node name="ChestObject" parent="Interactables" unique_id=203896271 instance=ExtResource("5_b73po")]
 transform = Transform3D(-0.00619584, 0, 0.999981, 0, 1, 0, -0.999981, 0, -0.00619584, -53.5913, 5.99063, 14.8777)
 
-[node name="ChestObject2" parent="Interactables" instance=ExtResource("5_b73po")]
+[node name="ChestObjectRoom" parent="Interactables" unique_id=693066672 instance=ExtResource("5_b73po")]
+transform = Transform3D(-0.00619584, 0, 0.999981, 0, 1, 0, -0.999981, 0, -0.00619584, -13.608, 0, 4.6)
+
+[node name="ChestObject2" parent="Interactables" unique_id=856623741 instance=ExtResource("5_b73po")]
 transform = Transform3D(0.999992, 0, 0.00403154, 0, 1, 0, -0.00403154, 0, 0.999992, -33.5677, 7.01364, 2.35008)
 
-[node name="ChestObject3" parent="Interactables" instance=ExtResource("5_b73po")]
+[node name="ChestObject3" parent="Interactables" unique_id=2019268926 instance=ExtResource("5_b73po")]
 transform = Transform3D(-0.998275, 0, 0.0586963, 0, 1, 0, -0.0586963, 0, -0.998275, -40.9867, 6.99174, 33.4466)
 
-[node name="DoorObject" parent="Interactables" instance=ExtResource("2_4fq4l")]
+[node name="DoorObject" parent="Interactables" unique_id=840283339 instance=ExtResource("2_4fq4l")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -2.45039, 0, 24.0387)
 
-[node name="GateObject" parent="Interactables" instance=ExtResource("3_0mbes")]
+[node name="GateObject" parent="Interactables" unique_id=40937520 instance=ExtResource("3_0mbes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.14057, 0.0725539, 12.3254)
 
-[node name="LeverObject2" parent="Interactables" node_paths=PackedStringArray("node_to_control") instance=ExtResource("10_10w6y")]
+[node name="LeverObject2" parent="Interactables" unique_id=594992761 node_paths=PackedStringArray("node_to_control") instance=ExtResource("10_10w6y")]
 transform = Transform3D(-0.996195, 0, -0.0871557, 0, 1, 0, 0.0871557, 0, -0.996195, -5.50223, 2.38419e-07, -4.89158)
 node_to_control = NodePath("../GateObject2")
 
-[node name="GateObject2" parent="Interactables" instance=ExtResource("3_0mbes")]
+[node name="GateObject2" parent="Interactables" unique_id=175185722 instance=ExtResource("3_0mbes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.91678, 0, -4.07837)
 locked = true
 
-[node name="Ladder" parent="Interactables" instance=ExtResource("4_a4kod")]
+[node name="Ladder" parent="Interactables" unique_id=399708721 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -30.9244, 0.0596613, 15.4925)
 
 [node name="LadderCol" parent="Interactables/Ladder" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.00007, 0)
 
-[node name="Ladder2" parent="Interactables" instance=ExtResource("4_a4kod")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.9542, 0.0822022, 30.5086)
+[node name="Ladder2" parent="Interactables" unique_id=743881373 instance=ExtResource("4_a4kod")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.954, 0.082, 29.509)
 
 [node name="LadderCol" parent="Interactables/Ladder2" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.92884, 0)
 
-[node name="StaticBody3D" parent="Interactables/Ladder2" instance=ExtResource("4_a4kod")]
+[node name="StaticBody3D" parent="Interactables/Ladder2" unique_id=1669857632 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.8426, 0.0822022, 30.5086)
 
-[node name="DoorObject2" parent="Interactables" instance=ExtResource("2_4fq4l")]
+[node name="Ladder5" parent="Interactables" unique_id=88960211 instance=ExtResource("4_a4kod")]
+transform = Transform3D(7.54979e-08, 0, -1, 0, 1, 0, 1, 0, 7.54979e-08, -13.812, 0, 1.5)
+ladder_height = 10.0
+
+[node name="LadderCol" parent="Interactables/Ladder5" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.92884, 0)
+
+[node name="Visual" parent="Interactables/Ladder5/LadderCol" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31622577, 0.0031137466)
+
+[node name="StaticBody3D" parent="Interactables/Ladder5" unique_id=756947520 instance=ExtResource("4_a4kod")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.8426, 0.0822022, 30.5086)
+
+[node name="DoorObject2" parent="Interactables" unique_id=1369283912 instance=ExtResource("2_4fq4l")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -23.5496, 0.0296541, 17.9979)
 locked = true
 
-[node name="LeverObject" parent="Interactables" node_paths=PackedStringArray("node_to_control") instance=ExtResource("10_10w6y")]
+[node name="LeverObject" parent="Interactables" unique_id=1897446851 node_paths=PackedStringArray("node_to_control") instance=ExtResource("10_10w6y")]
 transform = Transform3D(-0.0871557, 0, 0.996195, 0, 1, 0, -0.996195, 0, -0.0871557, -20.3826, 2.38419e-07, 3.39331)
 node_to_control = NodePath("../DoorObject2")
 
-[node name="SpawnSite" parent="Interactables" instance=ExtResource("9_cpxbt")]
+[node name="SpawnSite" parent="Interactables" unique_id=1384412047 instance=ExtResource("9_cpxbt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.07785, 9.53674e-07, 5.67158)
 
-[node name="Ladder3" parent="Interactables" instance=ExtResource("4_a4kod")]
+[node name="Ladder3" parent="Interactables" unique_id=1292915966 instance=ExtResource("4_a4kod")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -65.4492, 0, 19.8901)
 
 [node name="LadderCol" parent="Interactables/Ladder3" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 24.5002, 0)
 
-[node name="Ladder4" parent="Interactables" instance=ExtResource("4_a4kod")]
+[node name="Ladder4" parent="Interactables" unique_id=2095761940 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -65.4717, 0.0596613, 19.9143)
 
 [node name="LadderCol" parent="Interactables/Ladder4" index="0"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 25.028, 0)
 shape = SubResource("BoxShape3D_hr4mr")
 
-[node name="ControlCard" type="Control" parent="."]
+[node name="ControlCard" type="Control" parent="." unique_id=1053931259]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -263,7 +298,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("11_4norq")
 
-[node name="NinePatchRect" type="NinePatchRect" parent="ControlCard"]
+[node name="NinePatchRect" type="NinePatchRect" parent="ControlCard" unique_id=1319975717]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -284,7 +319,7 @@ patch_margin_bottom = 16
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
-[node name="TextureRect" type="TextureRect" parent="ControlCard/NinePatchRect"]
+[node name="TextureRect" type="TextureRect" parent="ControlCard/NinePatchRect" unique_id=1551465632]
 show_behind_parent = true
 layout_mode = 1
 anchors_preset = 15
@@ -294,7 +329,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_6jfgq")
 
-[node name="MarginContainer" type="MarginContainer" parent="ControlCard"]
+[node name="MarginContainer" type="MarginContainer" parent="ControlCard" unique_id=583718437]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -312,15 +347,16 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="ControlCardLabel" type="Label" parent="ControlCard/MarginContainer"]
+[node name="ControlCardLabel" type="Label" parent="ControlCard/MarginContainer" unique_id=571496804]
 custom_minimum_size = Vector2(21.07, 17.23)
 layout_mode = 2
 text = "WASD / L Joystick = Movement
 Mouse / R Joystick = Camera control, change lock-on target
 
 Q = Lock onto target / strafe mode
-E = Interact (doors, levers, ladders, etc)
+E = Interact (doors, levers, ladders, bread, etc)
 R = Use Item
+Ctrl+G = Throw equipped item
 1,2, Mousewheel, D-Pad Down = Change Item
 
 X = Change Right Hand / Weapon
@@ -336,12 +372,13 @@ F / Circle = X
 SpaceBar / Circle = Dodge
 Hold SpaceBar/Circle = Sprint"
 
-[node name="Music" type="AudioStreamPlayer" parent="."]
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=172264723]
 stream = ExtResource("14_wsft0")
 volume_db = -18.0
 autoplay = true
 
 [editable path="Interactables/Ladder"]
 [editable path="Interactables/Ladder2"]
+[editable path="Interactables/Ladder5"]
 [editable path="Interactables/Ladder3"]
 [editable path="Interactables/Ladder4"]

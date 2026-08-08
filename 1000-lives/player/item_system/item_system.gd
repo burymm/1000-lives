@@ -34,12 +34,15 @@ func _on_inventory_updated(inventory):
 		#print(kid)
 		kid.queue_free()
 	
-	if inventory[0]:
-		var current_item = inventory[0]
-		if current_item.count > 0:
+	if inventory.is_empty():
+		return
+	var current_item = inventory[0]
+	if current_item.count > 0:
 			if current_item.physical_instance:
 				var item_instance = current_item.physical_instance
 				var new_item :RigidBody3D = item_instance.instantiate()
+				if "mounted" in new_item:
+					new_item.mounted = true
 				# pass ItemResource data to this new physical object
 				storage_mount.call_deferred("add_child",new_item)
 			
@@ -51,6 +54,8 @@ func _on_item_used_signal(_current_item : ItemResource):
 		if _current_item.physical_instance:
 			var item_instance = _current_item.physical_instance
 			var new_item :RigidBody3D = item_instance.instantiate()
+			if "mounted" in new_item:
+				new_item.mounted = true
 			# pass ItemResource data to this new physical object
 			new_item.object_type = _current_item.object_type
 			new_item.player_node = player_node
@@ -65,4 +70,36 @@ func _on_item_used_signal(_current_item : ItemResource):
 				new_item.apply_impulse(force_dir * throw_strength, mount_point.global_position)
 			elif new_item.object_type == "DRINK":
 				item_drunk.emit()
-			
+
+## Throws the given item from the hand regardless of its object_type. Used by
+## the dedicated throw input so an equipped item can always be hurled into the
+## world and picked up again.
+func throw_current_item(_current_item : ItemResource):
+	if _current_item == null or _current_item.physical_instance == null:
+		return
+	var item_instance = _current_item.physical_instance
+	var new_item :RigidBody3D = item_instance.instantiate()
+	if "mounted" in new_item:
+		new_item.mounted = true
+	if "object_type" in new_item:
+		new_item.object_type = _current_item.object_type
+	if "player_node" in new_item:
+		new_item.player_node = player_node
+	if "item_resource" in new_item:
+		new_item.item_resource = _current_item
+	if "throw_me" in new_item:
+		new_item.throw_me = true
+	if "thrown" in new_item:
+		new_item.thrown = true
+	if "power" in new_item:
+		new_item.power = int(_current_item.weight * 2)
+	mount_point.call_deferred("add_child",new_item)
+
+	await get_tree().create_timer(.8).timeout
+	if is_instance_valid(new_item) and new_item.has_method("activate"):
+		new_item.activate()
+	item_thrown.emit()
+	var force_dir = player_node.global_transform.basis.z
+	## Heavier objects fly shorter: impulse = base_strength / weight.
+	var impulse = throw_strength / maxf(_current_item.weight, 0.1)
+	new_item.apply_impulse(force_dir * impulse, mount_point.global_position)

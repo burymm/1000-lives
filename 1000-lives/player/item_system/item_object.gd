@@ -9,6 +9,10 @@ class_name ItemObject
 @onready var area3d : Area3D = $Area3D
 var player_node
 var use_item = false
+## True when the object was launched by the dedicated throw input. A launched
+## object must not trigger its effect on the thrower the moment it activates
+## while still in their hand.
+var thrown : bool = false
 signal touched_target
 
 func _ready():
@@ -25,6 +29,8 @@ func activate():
 
 func _on_area_3d_body_entered(body):
 	touched_target.emit()
+	if thrown and body == player_node:
+		return
 	if body.is_in_group(target_group):
 		if effect_type == "HEAL":
 			if body.has_method("heal"):

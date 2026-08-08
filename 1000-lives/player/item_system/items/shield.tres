@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemResource" format=3]
+
+[ext_resource type="Script" path="res://player/item_system/item_resource.gd" id="1_shield"]
+[ext_resource type="PackedScene" path="res://player/item_system/items/shield_pickup.tscn" id="2_shield"]
+[ext_resource type="Texture2D" path="res://player/item_system/items/shield.png" id="3_shield"]
+
+[resource]
+script = ExtResource("1_shield")
+damage_type = "Bash"
+item_name = "Shield"
+inv_height = 3
+inv_width = 2
+max_damage = 4
+max_durability = 30
+min_damage = 2
+object_type = "WEAPON"
+physical_instance = ExtResource("2_shield")
+texture = ExtResource("3_shield")
+value = 8
+weight = 5

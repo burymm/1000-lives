@@ -17,8 +17,12 @@ func _ready():
 		signaling_node.connect(update_signal,_on_update_signal)
 
 func _on_update_signal(inventory):
-	if inventory[0]:
-		var current_item = inventory[0]
+	if inventory.is_empty():
+		item_count.text = str(0)
+		item_texture.texture = null
+		return
+	var current_item = inventory[0]
+	if current_item:
 		item_count.text = str(current_item.count)
 		item_texture.texture = current_item.texture
 	else:

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" format=3]
+
+[ext_resource type="Script" path="res://player/item_system/item_resource.gd" id="1_sword"]
+[ext_resource type="PackedScene" path="res://player/item_system/items/sword_pickup.tscn" id="2_sword"]
+[ext_resource type="Texture2D" path="res://player/item_system/items/sword.png" id="3_sword"]
+
+[resource]
+script = ExtResource("1_sword")
+damage_type = "Slash"
+inv_height = 3
+item_name = "Sword"
+max_damage = 7
+max_durability = 25
+min_damage = 3
+object_type = "WEAPON"
+physical_instance = ExtResource("2_sword")
+texture = ExtResource("3_sword")
+value = 10
+weight = 2

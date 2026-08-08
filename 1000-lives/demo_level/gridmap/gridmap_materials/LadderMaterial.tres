@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c8ikourr3dalx"]
+
+[ext_resource type="Texture2D" uid="uid://d0el5ijgx5krk" path="res://assets/structures/ladder_sm.png" id="1_htkfx"]
+
+[resource]
+transparency = 1
+cull_mode = 2
+albedo_texture = ExtResource("1_htkfx")
+heightmap_scale = 9.906
+heightmap_deep_parallax = true
+heightmap_min_layers = 8
+heightmap_max_layers = 32
+uv1_scale = Vector3(1, 13, 1)

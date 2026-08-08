@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://player/item_system/pickup_object.gd" id="1_bread"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bread"]
+size = Vector3(0.28, 0.14, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bread"]
+albedo_color = Color(0.831373, 0.607843, 0.266667, 1)
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_bread"]
+material = SubResource("StandardMaterial3D_bread")
+size = Vector3(0.28, 0.14, 0.28)
+
+[node name="Bread" type="RigidBody3D"]
+collision_layer = 9
+collision_mask = 5
+script = ExtResource("1_bread")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_bread")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_bread")

@@ -1,6 +1,7 @@
-[gd_scene load_steps=251 format=3 uid="uid://bn7vh6v8mmgja"]
+[gd_scene load_steps=254 format=3 uid="uid://bn7vh6v8mmgja"]
 
 [ext_resource type="Script" path="res://player/player_charbody3D.gd" id="1_4per7"]
+[ext_resource type="PackedScene" path="res://ui/player_menu.tscn" id="40_menu"]
 [ext_resource type="PackedScene" uid="uid://bffefrgxjb4sc" path="res://assets/characters/minnyquinn.glb" id="2_74vsj"]
 [ext_resource type="AnimationLibrary" uid="uid://d3h8qu2uqwwdf" path="res://player/animation_libraries/MeleeLib.res" id="3_8tvpy"]
 [ext_resource type="Script" path="res://player/player_anim_tree.gd" id="3_f2g20"]
@@ -36,6 +37,8 @@
 [ext_resource type="AudioStream" uid="uid://bxqrf0y1eflh6" path="res://audio/SoundFX/hit/hit_blunt_03.wav" id="30_6fy5x"]
 [ext_resource type="AudioStream" uid="uid://nbwjlkyrx4ya" path="res://audio/SoundFX/shuffle/shuffle_3.wav" id="30_jqvtk"]
 [ext_resource type="Script" path="res://player/item_system/inventory_system.gd" id="30_q1hnb"]
+[ext_resource type="Resource" path="res://player/item_system/items/sword.tres" id="42_sword"]
+[ext_resource type="Resource" path="res://player/item_system/items/shield.tres" id="43_shield"]
 [ext_resource type="AudioStream" uid="uid://dk0v3ug6sia4l" path="res://audio/SoundFX/special/Spawn01.wav" id="31_m4tnv"]
 [ext_resource type="Texture2D" uid="uid://c46nfvbeeb3pr" path="res://ui/panel-border-027.png" id="32_sdjc6"]
 [ext_resource type="Resource" uid="uid://wtv38601835b" path="res://player/item_system/items/firebomb.tres" id="34_fv8ea"]
@@ -1646,7 +1649,7 @@ material = SubResource("StandardMaterial3D_ygg1y")
 size = Vector2(0.02, 0.02)
 orientation = 2
 
-[node name="PlayerCharacterBodySoulsBase" type="CharacterBody3D" node_paths=PackedStringArray("animation_tree", "weapon_system", "gadget_system", "health_system", "inventory_system") groups=["player"]]
+[node name="PlayerCharacterBodySoulsBase" type="CharacterBody3D" node_paths=PackedStringArray("animation_tree", "weapon_system", "gadget_system", "health_system", "inventory_system", "item_system", "player_menu") groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.38419e-07, 0)
 collision_layer = 2
 collision_mask = 3
@@ -1658,6 +1661,8 @@ weapon_system = NodePath("WeaponSystem")
 gadget_system = NodePath("GadgetSystem")
 health_system = NodePath("HealthSystem")
 inventory_system = NodePath("InventorySystem")
+item_system = NodePath("ItemSystem")
+player_menu = NodePath("GUI/PlayerMenu")
 hard_landing_height = 2.0
 
 [node name="minnyquinn" parent="." instance=ExtResource("2_74vsj")]
@@ -2113,11 +2118,40 @@ texture_progress = SubResource("GradientTexture2D_hctwx")
 script = ExtResource("38_auti3")
 health_system = NodePath("../../../../HealthSystem")
 
+[node name="InteractPrompt" type="Label" parent="GUI"]
+visible = false
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -220.0
+offset_top = -120.0
+offset_right = 220.0
+offset_bottom = -70.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.75)
+theme_override_constants/outline_size = 4
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 32
+text = "Press E to pick up"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="SignalSwitch" type="Node" parent="GUI" node_paths=PackedStringArray("signaling_node")]
 script = ExtResource("17_xborg")
 signaling_node = NodePath("../..")
 start_signal = "death_started"
 property = "visible"
+
+[node name="PlayerMenu" parent="GUI" instance=ExtResource("40_menu") node_paths=PackedStringArray("player_node", "inventory_system")]
+player_node = NodePath("../..")
+inventory_system = NodePath("../../InventorySystem")
 
 [node name="InventorySystem" type="Node" parent="." node_paths=PackedStringArray("signaling_node")]
 script = ExtResource("30_q1hnb")
@@ -2125,6 +2159,8 @@ signaling_node = NodePath("..")
 use_item_signal = "use_item_started"
 starter_item = ExtResource("34_xeucu")
 starter_item2 = ExtResource("34_fv8ea")
+starting_weapon = ExtResource("42_sword")
+starting_shield = ExtResource("43_shield")
 
 [node name="HealthSystem" type="Node" parent="." node_paths=PackedStringArray("hit_reporting_node", "heal_reporting_node")]
 script = ExtResource("41_x7csm")

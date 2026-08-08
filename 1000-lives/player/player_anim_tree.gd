@@ -61,6 +61,7 @@ func _ready():
 	player_node.item_change_started.connect(_on_item_change_started)
 	player_node.item_change_ended.connect(_on_item_change_ended)
 	player_node.use_item_started.connect(_on_use_item_started)
+	player_node.throw_started.connect(_on_throw_started)
 		
 	player_node.parry_started.connect(_on_parry_started)
 	player_node.hurt_started.connect(_on_hurt_started)
@@ -133,6 +134,9 @@ func _on_death_started():
 	base_state_machine.travel("Death")
 
 func _on_use_item_started():
+	request_oneshot("UseItem")
+
+func _on_throw_started():
 	request_oneshot("UseItem")
 
 func _on_gadget_started():
