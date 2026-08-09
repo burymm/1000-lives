@@ -2,11 +2,9 @@
 
 [ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="1_bread"]
 [ext_resource type="PackedScene" path="res://player/item_system/items/bread.tscn" id="2_bread"]
-[ext_resource type="Texture2D" uid="uid://bchuawm7a7p5h" path="res://player/item_system/items/bread.png" id="3_bread"]
 
 [resource]
 script = ExtResource("1_bread")
 item_name = "Bread"
 weight = 0.5
 physical_instance = ExtResource("2_bread")
-texture = ExtResource("3_bread")

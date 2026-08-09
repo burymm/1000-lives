@@ -2,11 +2,9 @@
 
 [ext_resource type="PackedScene" uid="uid://vs3idmafxkcd" path="res://player/item_system/items/fire_bomb.tscn" id="1_o1sko"]
 [ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="1_o8w0p"]
-[ext_resource type="Texture2D" uid="uid://de5jbsp1g1i7l" path="res://player/item_system/items/firebomb.png" id="2_4qym0"]
 
 [resource]
 script = ExtResource("1_o8w0p")
 item_name = "FireBomb"
 object_type = "THROWN"
 physical_instance = ExtResource("1_o1sko")
-texture = ExtResource("2_4qym0")

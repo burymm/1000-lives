@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bk8v4hky4r45o"
-path="res://.godot/imported/rock_boulder.png-4b41e24d4060afb325bc7b52401254c2.ctex"
+uid="uid://c0eqprpcfp758"
+path="res://.godot/imported/shield.png-b0acbe71a98a5fd0320e772aaa7083f5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://player/item_system/items/rock_boulder.png"
-dest_files=["res://.godot/imported/rock_boulder.png-4b41e24d4060afb325bc7b52401254c2.ctex"]
+source_file="res://tools/icon_dumps/shield.png"
+dest_files=["res://.godot/imported/shield.png-b0acbe71a98a5fd0320e772aaa7083f5.ctex"]
 
 [params]
 

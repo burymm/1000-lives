@@ -20,12 +20,20 @@ config/icon="res://icon.svg"
 
 buses/default_bus_layout="res://audio/default_bus_layout.tres"
 
+[autoload]
+
+ItemIcons="*res://player/item_system/item_icon_renderer.gd"
+
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/ladder_gizmo/plugin.cfg")
 
 [input]
 
@@ -209,7 +217,3 @@ throw_item={
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/ladder_gizmo/plugin.cfg")

@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://player/item_system/item_resource.gd" id="1_shield"]
 [ext_resource type="PackedScene" path="res://player/item_system/items/shield_pickup.tscn" id="2_shield"]
-[ext_resource type="Texture2D" path="res://player/item_system/items/shield.png" id="3_shield"]
 
 [resource]
 script = ExtResource("1_shield")
@@ -15,6 +14,5 @@ max_durability = 30
 min_damage = 2
 object_type = "WEAPON"
 physical_instance = ExtResource("2_shield")
-texture = ExtResource("3_shield")
 value = 8
 weight = 5

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://de5jbsp1g1i7l"
-path="res://.godot/imported/firebomb.png-72767a9eac3d9bc7ba242dc0cbf05847.ctex"
+uid="uid://c7bj8lvqqc7x"
+path="res://.godot/imported/potion.png-bba9f9ba098b3b6f3ed01b33996f1d9c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://player/item_system/items/firebomb.png"
-dest_files=["res://.godot/imported/firebomb.png-72767a9eac3d9bc7ba242dc0cbf05847.ctex"]
+source_file="res://tools/icon_dumps/potion.png"
+dest_files=["res://.godot/imported/potion.png-bba9f9ba098b3b6f3ed01b33996f1d9c.ctex"]
 
 [params]
 

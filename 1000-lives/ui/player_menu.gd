@@ -24,12 +24,23 @@ var notice_label : Label
 var notice_timer : SceneTreeTimer
 
 const SLOT_DEFS : Dictionary = {
-	"Head":      Vector4(100, 24, 56, 56),
-	"Torso":     Vector4(86, 100, 84, 100),
-	"RightHand": Vector4(28, 102, 44, 104),
-	"LeftHand":  Vector4(184, 102, 44, 104),
-	"Belt":      Vector4(100, 214, 56, 38),
-	"Legs":      Vector4(86, 272, 84, 120),
+	"Head":      Vector4(200, 24, 112, 56),
+	"Torso":     Vector4(172, 100, 168, 100),
+	"RightHand": Vector4(56, 102, 88, 104),
+	"LeftHand":  Vector4(368, 102, 88, 104),
+	"Belt":      Vector4(200, 214, 112, 38),
+	"Legs":      Vector4(172, 272, 168, 120),
+}
+
+## Icon scale in the hand slots per item grid size (the slots are 2x wide, so
+## wide items need stronger shrinking to not dominate the hands).
+const HAND_ICON_SCALE : Dictionary = {
+	"1x1": 0.5,
+	"1x2": 0.5,
+	"1x3": 0.5,
+	"2x1": 0.5,
+	"2x2": 0.5,
+	"2x3": 0.5,
 }
 
 var tab_buttons : Dictionary = {}
@@ -60,8 +71,16 @@ func _ready():
 		inventory_system.inventory_updated.connect(_on_inventory_updated)
 		inventory_system.equipment_changed.connect(_on_equipment_changed)
 		inventory_system.inventory_error.connect(_on_inventory_error)
+	ItemIcons.icon_ready.connect(_on_icon_ready)
 	_refresh_grid()
 	_refresh_char_slots()
+
+## Item icons are generated asynchronously at startup; rebuild the shown icons
+## once they arrive.
+func _on_icon_ready():
+	if visible:
+		_refresh_grid()
+		_refresh_char_slots()
 
 func _build_ui():
 	var background = ColorRect.new()
@@ -91,7 +110,7 @@ func _build_ui():
 
 	var window = PanelContainer.new()
 	window.name = "Window"
-	window.custom_minimum_size = Vector2(900, 620)
+	window.custom_minimum_size = Vector2(1350, 660)
 	center.add_child(window)
 
 	var window_margin = MarginContainer.new()
@@ -306,8 +325,9 @@ func _make_slot(_item, _index):
 	button.focus_mode = Control.FOCUS_NONE
 	button.tooltip_text = _item.item_name
 	button.modulate = Color(0.9, 0.95, 1.0)
-	if _item.texture:
-		button.icon = _item.texture
+	var icon := ItemIcons.get_icon(_item)
+	if icon:
+		button.icon = icon
 		button.expand_icon = true
 	button.pressed.connect(_on_slot_pressed.bind(_index))
 	button.set_drag_forwarding(_get_drag_data, _can_drop_data, _drop_data)
@@ -386,7 +406,7 @@ func _refresh_equipment_tab():
 
 func _build_character_panel():
 	var panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(290, 470)
+	panel.custom_minimum_size = Vector2(560, 470)
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_top", 12)
 	margin.add_theme_constant_override("margin_bottom", 12)
@@ -401,7 +421,7 @@ func _build_character_panel():
 	title.add_theme_font_size_override("font_size", 18)
 	box.add_child(title)
 	var figure = Control.new()
-	figure.custom_minimum_size = Vector2(256, 440)
+	figure.custom_minimum_size = Vector2(512, 440)
 	figure.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	figure.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(figure)
@@ -412,12 +432,12 @@ func _build_silhouette(_figure):
 	var body_color = Color(0.5, 0.46, 0.42, 0.9)
 	var limb_color = Color(0.42, 0.38, 0.35, 0.9)
 	var shapes = [
-		[Vector2(100, 24), Vector2(56, 56), body_color],
-		[Vector2(86, 100), Vector2(84, 100), body_color],
-		[Vector2(28, 102), Vector2(44, 104), limb_color],
-		[Vector2(184, 102), Vector2(44, 104), limb_color],
-		[Vector2(100, 214), Vector2(56, 38), body_color],
-		[Vector2(86, 272), Vector2(84, 120), body_color],
+		[Vector2(200, 24), Vector2(112, 56), body_color],
+		[Vector2(172, 100), Vector2(168, 100), body_color],
+		[Vector2(56, 102), Vector2(88, 104), limb_color],
+		[Vector2(368, 102), Vector2(88, 104), limb_color],
+		[Vector2(200, 214), Vector2(112, 38), body_color],
+		[Vector2(172, 272), Vector2(168, 120), body_color],
 	]
 	for shape in shapes:
 		var rect = ColorRect.new()
@@ -465,13 +485,23 @@ func _refresh_char_slots():
 	for slot in char_icons:
 		var item = inventory_system.equipment.get(slot)
 		var icon : TextureRect = char_icons[slot]
-		if item and item.texture:
-			icon.texture = item.texture
+		var item_icon := ItemIcons.get_icon(item) if item else null
+		if item and item_icon:
+			icon.texture = item_icon
 			icon.visible = true
+			# Hand slots are 2x wide; wide items (shields, rocks, potions) get
+			# explicit smaller scales so they read as props in the hands while
+			# the sword (1x3) keeps its reference size.
+			var key := "%dx%d" % [item.inv_width, item.inv_height]
+			var s := float(HAND_ICON_SCALE.get(key, 0.33))
+			icon.pivot_offset = icon.size / 2.0
+			icon.scale = Vector2(s, s)
 		else:
 			icon.texture = null
 			icon.visible = false
+			icon.scale = Vector2.ONE
 		var btn : Button = char_slots[slot]
+		btn.modulate = Color(1, 1, 1, 1.0) if item else Color(1, 1, 1, 0.2)
 		btn.tooltip_text = slot + (" — " + item.item_name if item else "")
 
 func _on_equipment_changed(_slot):

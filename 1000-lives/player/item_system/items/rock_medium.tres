@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="1_rock"]
 [ext_resource type="PackedScene" path="res://player/item_system/items/rock.tscn" id="2_rock"]
-[ext_resource type="Texture2D" uid="uid://b0u15e4d202w3" path="res://player/item_system/items/rock_medium.png" id="3_rock"]
 
 [resource]
 script = ExtResource("1_rock")
@@ -14,4 +13,3 @@ damage_type = "Blunt"
 min_damage = 2
 max_damage = 4
 physical_instance = ExtResource("2_rock")
-texture = ExtResource("3_rock")

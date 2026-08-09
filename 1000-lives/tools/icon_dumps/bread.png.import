@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ovhnnpfa0gbc"
-path="res://.godot/imported/rock.png-14e58b0118c93304adc2c12792bbd7d7.ctex"
+uid="uid://6yv1okjj5f6d"
+path="res://.godot/imported/bread.png-9d2d80e6ffad7894417f489318ba6acd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://player/item_system/items/rock.png"
-dest_files=["res://.godot/imported/rock.png-14e58b0118c93304adc2c12792bbd7d7.ctex"]
+source_file="res://tools/icon_dumps/bread.png"
+dest_files=["res://.godot/imported/bread.png-9d2d80e6ffad7894417f489318ba6acd.ctex"]
 
 [params]
 
