@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemResource" format=3 uid="uid://ck1n4sd4ugojn"]
+
+[ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="1_rock"]
+[ext_resource type="PackedScene" path="res://player/item_system/items/rock.tscn" id="2_rock"]
+[ext_resource type="Texture2D" uid="uid://bk8v4hky4r45o" path="res://player/item_system/items/rock_boulder.png" id="3_rock"]
+
+[resource]
+script = ExtResource("1_rock")
+item_name = "Boulder"
+object_type = "THROWN"
+weight = 10.0
+value = 4
+inv_width = 2
+inv_height = 2
+damage_type = "Blunt"
+min_damage = 7
+max_damage = 12
+physical_instance = ExtResource("2_rock")
+texture = ExtResource("3_rock")

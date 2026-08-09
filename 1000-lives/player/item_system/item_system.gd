@@ -43,6 +43,8 @@ func _on_inventory_updated(inventory):
 				var new_item :RigidBody3D = item_instance.instantiate()
 				if "mounted" in new_item:
 					new_item.mounted = true
+				if "item_resource" in new_item:
+					new_item.item_resource = current_item
 				# pass ItemResource data to this new physical object
 				storage_mount.call_deferred("add_child",new_item)
 			
@@ -59,6 +61,8 @@ func _on_item_used_signal(_current_item : ItemResource):
 			# pass ItemResource data to this new physical object
 			new_item.object_type = _current_item.object_type
 			new_item.player_node = player_node
+			if "item_resource" in new_item:
+				new_item.item_resource = _current_item
 			mount_point.call_deferred("add_child",new_item)
 			
 			await get_tree().create_timer(.8).timeout
@@ -67,7 +71,7 @@ func _on_item_used_signal(_current_item : ItemResource):
 				item_thrown.emit()
 				var force_dir = player_node.global_transform.basis.z
 				#force_dir.y += .1
-				new_item.apply_impulse(force_dir * throw_strength, mount_point.global_position)
+				new_item.apply_impulse(force_dir * _impulse_for(new_item), mount_point.global_position)
 			elif new_item.object_type == "DRINK":
 				item_drunk.emit()
 
@@ -100,6 +104,14 @@ func throw_current_item(_current_item : ItemResource):
 		new_item.activate()
 	item_thrown.emit()
 	var force_dir = player_node.global_transform.basis.z
-	## Heavier objects fly shorter: impulse = base_strength / weight.
-	var impulse = throw_strength / maxf(_current_item.weight, 0.1)
-	new_item.apply_impulse(force_dir * impulse, mount_point.global_position)
+	## Heavier objects fly shorter. Velocity scales as ~weight^-0.25 and is
+	## applied through the body's mass, so a 10kg boulder still launches while
+	## a pebble scatters far away.
+	new_item.apply_impulse(force_dir * _impulse_for(new_item), mount_point.global_position)
+
+## Impulse that launches a thrown body with a weight-scaled launch speed:
+## speed = throw_strength * weight^-0.25, impulse = mass * speed. Using the body
+## mass keeps non-rock items (mass 1) at the classic throw_strength speed.
+func _impulse_for(body : RigidBody3D) -> float:
+	var m := maxf(body.mass, 0.1)
+	return m * throw_strength * pow(m, -0.25)

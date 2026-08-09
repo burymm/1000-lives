@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemResource" format=3 uid="uid://ydudonc1owo2"]
+
+[ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="1_rock"]
+[ext_resource type="PackedScene" path="res://player/item_system/items/rock.tscn" id="2_rock"]
+[ext_resource type="Texture2D" uid="uid://csoj458c0wp0e" path="res://player/item_system/items/rock_small.png" id="3_rock"]
+
+[resource]
+script = ExtResource("1_rock")
+item_name = "Small Rock"
+object_type = "THROWN"
+weight = 0.5
+damage_type = "Blunt"
+max_damage = 1
+physical_instance = ExtResource("2_rock")
+texture = ExtResource("3_rock")

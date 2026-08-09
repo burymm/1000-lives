@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://bjtuv51f5ahfr"]
+
+[ext_resource type="Script" uid="uid://0vnsh1wn6tt2" path="res://player/item_system/pickup_object.gd" id="1_rock"]
+[ext_resource type="PackedScene" uid="uid://bpseiseidsbk7" path="res://player/item_system/items/rocks.glb" id="2_rock"]
+[ext_resource type="Script" uid="uid://bpds8tt42yqdl" path="res://player/item_system/items/rock_model.gd" id="3_rock"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rock"]
+size = Vector3(0.3, 0.3, 0.35)
+
+[node name="Rock" type="RigidBody3D" unique_id=994000769]
+collision_layer = 9
+collision_mask = 5
+script = ExtResource("1_rock")
+
+[node name="RockModel" parent="." unique_id=2046425425 instance=ExtResource("2_rock")]
+script = ExtResource("3_rock")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1398348493]
+shape = SubResource("BoxShape3D_rock")

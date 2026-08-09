@@ -1,3 +1,4 @@
+@tool
 extends Area3D
 
 ## Gap between the player and the wall face when standing on the ladder.
@@ -6,8 +7,13 @@ const CLIMB_DIST := 0.5
 const PROBE_DIST := 2.0
 
 ## Climbable height of this ladder. The collider box and the visual panel are
-## resized to match on _ready(), so just change this number per instance.
-@export_range(1.0, 30.0, 0.1) var ladder_height := 5.0
+## resized to match on every change, so just set this number per instance.
+@export_range(1.0, 200.0, 0.1) var ladder_height := 5.0:
+	set(value):
+		if ladder_height == value:
+			return
+		ladder_height = value
+		_apply_height()
 
 func _ready():
 	add_to_group("interactable")
@@ -19,7 +25,8 @@ func _ready():
 
 ## Resizes the ladder's collider box and visual panel to ladder_height. The
 ## shapes are shared sub-resources, so duplicate them to keep this instance
-## independent from the others.
+## independent from the others. The collider is centered at ladder_height / 2
+## so the climbable area always spans the floor (y = 0) up to ladder_height.
 func _apply_height():
 	var col := get_node_or_null("LadderCol") as CollisionShape3D
 	if col:
@@ -28,8 +35,10 @@ func _apply_height():
 			var new_box: BoxShape3D = box.duplicate()
 			new_box.size.y = ladder_height
 			col.shape = new_box
+		col.position.y = ladder_height * 0.5
 	var visual := get_node_or_null("LadderCol/Visual") as MeshInstance3D
 	if visual:
+		visual.position = Vector3.ZERO
 		var mesh := visual.mesh as QuadMesh
 		if mesh:
 			var orig_size := mesh.size.y

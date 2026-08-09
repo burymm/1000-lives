@@ -3,3 +3,4 @@
 *.log
 /exports/
 /progress.md
+/.vscode

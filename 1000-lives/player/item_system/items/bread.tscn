@@ -1,17 +1,10 @@
-[gd_scene format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://player/item_system/pickup_object.gd" id="1_bread"]
+[ext_resource type="PackedScene" path="res://player/item_system/items/bread.glb" id="2_bread"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_bread"]
-size = Vector3(0.28, 0.14, 0.28)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bread"]
-albedo_color = Color(0.831373, 0.607843, 0.266667, 1)
-roughness = 0.6
-
-[sub_resource type="BoxMesh" id="BoxMesh_bread"]
-material = SubResource("StandardMaterial3D_bread")
-size = Vector3(0.28, 0.14, 0.28)
+size = Vector3(0.14, 0.19, 0.3)
 
 [node name="Bread" type="RigidBody3D"]
 collision_layer = 9
@@ -19,7 +12,8 @@ collision_mask = 5
 script = ExtResource("1_bread")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.095, 0)
 shape = SubResource("BoxShape3D_bread")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_bread")
+[node name="BreadModel" parent="." instance=ExtResource("2_bread")]
+transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, -0.012, 0)
