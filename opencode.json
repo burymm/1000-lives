@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "references": {
+    "kb": {
+      "path": "docs/kb",
+      "description": "Knowledge base for the 1000-lives Godot project: architecture, system file map, item/inventory/chest/equipment flow, and conventions. Read the relevant doc instead of re-discovering the codebase."
+    }
+  }
+}
