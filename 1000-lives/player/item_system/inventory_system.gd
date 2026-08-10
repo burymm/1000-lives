@@ -1,4 +1,4 @@
-extends Node
+extends GridInventory
 class_name InventorySystem
 
 ## Inventory lives for a single life. By the game's lore, death means starting
@@ -8,16 +8,11 @@ class_name InventorySystem
 @export var change_item_signal : String = "item_change_started"
 @export var use_item_signal  : String = "item_used"
 
-## Grid inventory: items occupy cells, each item takes inv_width x inv_height cells.
-@export var inv_columns : int = 10
-@export var inv_rows : int = 5
-
 ## Character equipment slots. Any item can be dragged into any slot — the player
 ## experiments with what goes where.
 const SLOTS : Array = ["Head", "Torso", "RightHand", "LeftHand", "Belt", "Legs"]
 var equipment : Dictionary = {}
 
-@onready var inventory : Array = []
 @export var starter_item : ItemResource
 @export var starter_item2 : ItemResource
 ## Equipment the player starts a life with, worn directly in the matching slot
@@ -27,7 +22,6 @@ var equipment : Dictionary = {}
 @onready var current_item
 
 signal item_used
-signal inventory_updated(Array)
 signal equipment_changed(slot_name)
 ## Emitted when an equipment action is rejected (e.g. no room to return the
 ## displaced item to the grid). The UI surfaces this to the player.
@@ -51,57 +45,15 @@ func restock_for_new_life():
 		equipment["LeftHand"] = starting_shield.clone_item()
 		equipment_changed.emit("LeftHand")
 
-func add_item(_new_item: ItemResource):
-	if _new_item == null:
-		return
-	var stack = _new_item.clone_item()
-	stack.count = 1
-	if not can_fit(stack):
-		return
-	_find_spot(stack)
-	inventory.append(stack)
-	current_item = inventory[0]
-	inventory_updated.emit(inventory)
-
-func _cells_used() -> int:
-	var used := 0
-	for entry in inventory:
-		used += entry.inv_width * entry.inv_height
-	return used
-
-func can_fit(_item) -> bool:
-	if _item == null:
-		return false
-	return _cells_used() + _item.inv_width * _item.inv_height <= inv_columns * inv_rows
-
-func _find_spot(_item):
-	var occupied : Dictionary = {}
-	for entry in inventory:
-		for yy in range(entry.inv_height):
-			for xx in range(entry.inv_width):
-				occupied[Vector2i(entry.grid_x + xx, entry.grid_y + yy)] = true
-	for y in range(inv_rows):
-		for x in range(inv_columns):
-			var fits = true
-			for yy in range(_item.inv_height):
-				for xx in range(_item.inv_width):
-					if y + yy >= inv_rows or x + xx >= inv_columns or occupied.has(Vector2i(x + xx, y + yy)):
-						fits = false
-						break
-				if not fits:
-					break
-			if fits:
-				_item.grid_x = x
-				_item.grid_y = y
-				return
+func add_item(_new_item: ItemResource) -> bool:
+	var ok := super.add_item(_new_item)
+	if ok:
+		current_item = inventory[0]
+	return ok
 
 func remove_item(_index) -> ItemResource:
-	if _index < 0 or _index >= inventory.size():
-		return null
-	var former_item = inventory[_index]
-	inventory.remove_at(_index)
+	var former_item = super.remove_item(_index)
 	current_item = inventory[0] if inventory.size() > 0 else null
-	inventory_updated.emit(inventory)
 	return former_item
 
 func drop_item(_index) -> bool:
@@ -184,7 +136,10 @@ func equip_item(_index : int, _slot : String) -> bool:
 			inventory_error.emit("No space in inventory")
 			return false
 		equipment.erase(_slot)
-		_find_spot(prev)
+		if not _find_spot(prev):
+			equipment[_slot] = prev
+			inventory_error.emit("No space in inventory")
+			return false
 		inventory.append(prev)
 	inventory.remove_at(_index)
 	equipment[_slot] = item
@@ -202,7 +157,10 @@ func unequip_item(_slot : String) -> bool:
 		inventory_error.emit("No space in inventory")
 		return false
 	equipment.erase(_slot)
-	_find_spot(item)
+	if not _find_spot(item):
+		equipment[_slot] = item
+		inventory_error.emit("No space in inventory")
+		return false
 	inventory.append(item)
 	current_item = inventory[0] if inventory.size() > 0 else null
 	inventory_updated.emit(inventory)
@@ -225,7 +183,10 @@ func move_equipped(_from_slot : String, _to_slot : String) -> bool:
 			inventory_error.emit("No space in inventory")
 			return false
 		equipment.erase(_to_slot)
-		_find_spot(other)
+		if not _find_spot(other):
+			equipment[_to_slot] = other
+			inventory_error.emit("No space in inventory")
+			return false
 		inventory.append(other)
 	equipment.erase(_from_slot)
 	equipment[_to_slot] = item
@@ -234,3 +195,38 @@ func move_equipped(_from_slot : String, _to_slot : String) -> bool:
 	equipment_changed.emit(_from_slot)
 	equipment_changed.emit(_to_slot)
 	return true
+
+## Equips an item that does NOT live in the grid (e.g. taken from a chest)
+## directly into a slot. The displaced occupant (if any) is returned to the
+## grid; returns false without changing anything if there is no room for it.
+func equip_external(_item : ItemResource, _slot : String) -> bool:
+	if _slot not in SLOTS or _item == null:
+		return false
+	if equipment.has(_slot):
+		var prev = equipment[_slot]
+		if not can_fit(prev):
+			inventory_error.emit("No space in inventory")
+			return false
+		equipment.erase(_slot)
+		if not _find_spot(prev):
+			equipment[_slot] = prev
+			inventory_error.emit("No space in inventory")
+			return false
+		inventory.append(prev)
+	equipment[_slot] = _item
+	current_item = inventory[0] if inventory.size() > 0 else null
+	inventory_updated.emit(inventory)
+	equipment_changed.emit(_slot)
+	return true
+
+## Removes an item from an equipment slot and returns it, WITHOUT placing it in
+## the grid (used when moving it into another container such as a chest).
+func take_equipped(_slot : String) -> ItemResource:
+	if _slot not in SLOTS or not equipment.has(_slot):
+		return null
+	var item = equipment[_slot]
+	equipment.erase(_slot)
+	current_item = inventory[0] if inventory.size() > 0 else null
+	inventory_updated.emit(inventory)
+	equipment_changed.emit(_slot)
+	return item

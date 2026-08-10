@@ -37,7 +37,7 @@ func _ready():
 func get_icon(item) -> Texture2D:
 	if item == null:
 		return null
-	var scene : PackedScene = item.physical_instance
+	var scene : PackedScene = _scene_for(item)
 	if scene == null:
 		return item.texture if item.texture != null else null
 	var key : String = _key_for(scene, item)
@@ -45,6 +45,14 @@ func get_icon(item) -> Texture2D:
 		return _cache[key]
 	_enqueue(scene, item, key)
 	return item.texture if item.texture != null else null
+
+## The scene that represents the item visually. `icon_instance` overrides the
+## world pickup scene so items whose worn model differs from their pickup (sword,
+## shield) get an icon that matches what the character actually holds.
+func _scene_for(item) -> PackedScene:
+	if item.icon_instance != null:
+		return item.icon_instance
+	return item.physical_instance
 
 ## Icons are cached per 3D scene AND per weight: some scenes (e.g. rocks.glb)
 ## pick their visual variant from the item's weight, so two weights must not
@@ -64,8 +72,8 @@ func _prewarm_all():
 	while f != "":
 		if not dir.current_is_dir() and f.ends_with(".tres"):
 			var res = load(ITEMS_DIR + f)
-			if res is ItemResource and res.physical_instance:
-				_enqueue(res.physical_instance, res, _key_for(res.physical_instance, res))
+			if res is ItemResource and _scene_for(res):
+				_enqueue(_scene_for(res), res, _key_for(_scene_for(res), res))
 		f = dir.get_next()
 	dir.list_dir_end()
 	_consume_queue()

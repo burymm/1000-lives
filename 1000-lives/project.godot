@@ -33,7 +33,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/ladder_gizmo/plugin.cfg")
+enabled=PackedStringArray("res://addons/chest_editor/plugin.cfg")
 
 [input]
 
@@ -217,3 +217,5 @@ throw_item={
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_s3tc_bptc=true
+textures/vram_compression/import_etc2_astc=true

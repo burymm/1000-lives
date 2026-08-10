@@ -14,9 +14,12 @@
 [ext_resource type="Script" uid="uid://cpb7cmsu44cld" path="res://cameras/area_cam/area_cam.gd" id="13_2aall"]
 [ext_resource type="Texture2D" uid="uid://d0el5ijgx5krk" path="res://assets/structures/ladder_sm.png" id="13_6npoa"]
 [ext_resource type="AudioStream" uid="uid://ddfdcmyfdq6fi" path="res://audio/bone_in_the_walls__level_loop_session.ogg" id="14_wsft0"]
+[ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="15_qm1i5"]
 [ext_resource type="PackedScene" uid="uid://cq2lr6sclvutj" path="res://enemy/enemy_base_root_motion.tscn" id="15_yac72"]
 [ext_resource type="PackedScene" path="res://player/item_system/items/bread.tscn" id="16_bread"]
+[ext_resource type="Resource" path="res://player/item_system/items/sword.tres" id="16_qm1i5"]
 [ext_resource type="Resource" uid="uid://l1cbep47h18j" path="res://player/item_system/items/bread.tres" id="17_bread"]
+[ext_resource type="Resource" uid="uid://dyscly38fswoe" path="res://player/item_system/items/shield.tres" id="17_flwqg"]
 [ext_resource type="PackedScene" uid="uid://bjtuv51f5ahfr" path="res://player/item_system/items/rock.tscn" id="18_rock"]
 [ext_resource type="Resource" uid="uid://ydudonc1owo2" path="res://player/item_system/items/rock_small.tres" id="19_rock"]
 [ext_resource type="Resource" uid="uid://c1s43mxuwbk77" path="res://player/item_system/items/rock.tres" id="20_rock"]
@@ -88,27 +91,11 @@ _data = {
 }
 point_count = 4
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_0qj38"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_flwqg"]
 size = Vector3(0.7, 4.5, 0.35)
 
-[sub_resource type="QuadMesh" id="QuadMesh_5hb6y"]
-size = Vector2(0.7, 4.4)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qm1i5"]
-transparency = 1
-cull_mode = 2
-albedo_texture = ExtResource("13_6npoa")
-heightmap_scale = 9.906
-heightmap_deep_parallax = true
-heightmap_min_layers = 8
-heightmap_max_layers = 32
-uv1_scale = Vector3(1, 11.67347, 1)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_flwqg"]
-size = Vector3(0.7, 5, 0.35)
-
 [sub_resource type="QuadMesh" id="QuadMesh_rfg2k"]
-size = Vector2(0.7, 4.9)
+size = Vector2(0.7, 4.4)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ylhxw"]
 transparency = 1
@@ -118,7 +105,7 @@ heightmap_scale = 9.906
 heightmap_deep_parallax = true
 heightmap_min_layers = 8
 heightmap_max_layers = 32
-uv1_scale = Vector3(1, 13, 1)
+uv1_scale = Vector3(1, 11.67347, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_rki70"]
 size = Vector3(0.7, 5, 0.35)
@@ -153,12 +140,28 @@ heightmap_max_layers = 32
 uv1_scale = Vector3(1, 13, 1)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4l0xh"]
-size = Vector3(0.7, 50, 0.35)
+size = Vector3(0.7, 5, 0.35)
 
 [sub_resource type="QuadMesh" id="QuadMesh_67m3d"]
-size = Vector2(0.7, 49.9)
+size = Vector2(0.7, 4.9)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yvvfs"]
+transparency = 1
+cull_mode = 2
+albedo_texture = ExtResource("13_6npoa")
+heightmap_scale = 9.906
+heightmap_deep_parallax = true
+heightmap_min_layers = 8
+heightmap_max_layers = 32
+uv1_scale = Vector3(1, 13, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v6xu0"]
+size = Vector3(0.7, 50, 0.35)
+
+[sub_resource type="QuadMesh" id="QuadMesh_1axmg"]
+size = Vector2(0.7, 49.9)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mvlo2"]
 transparency = 1
 cull_mode = 2
 albedo_texture = ExtResource("13_6npoa")
@@ -306,7 +309,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.4471, 0, 30.6534)
 curve = SubResource("Curve3D_2c2rs")
 
 [node name="EnemyPatrolPoint" type="PathFollow3D" parent="Enemies/PatrolPath" unique_id=931426795]
-transform = Transform3D(0.99973243, 0, -0.022516385, 0, 1, 0, 0.022516385, 0, 0.99973243, -0.43294, 0, -0.97773)
+transform = Transform3D(0.999732, 0, -0.022516375, 0, 1, 0, 0.022516375, 0, 0.999732, -0.43294, 0, -0.97773)
 script = ExtResource("6_i73lt")
 
 [node name="PatrolArea2" type="Path3D" parent="Enemies" unique_id=173112507]
@@ -329,9 +332,11 @@ script = ExtResource("6_i73lt")
 
 [node name="ChestObject" parent="Interactables" unique_id=203896271 instance=ExtResource("5_b73po")]
 transform = Transform3D(-0.00619584, 0, 0.999981, 0, 1, 0, -0.999981, 0, -0.00619584, -53.5913, 5.99063, 14.8777)
+starter_items = Array[ExtResource("15_qm1i5")]([ExtResource("17_bread"), ExtResource("19_rock"), ExtResource("21_rock")])
 
 [node name="ChestObjectRoom" parent="Interactables" unique_id=693066672 instance=ExtResource("5_b73po")]
-transform = Transform3D(-0.00619584, 0, 0.999981, 0, 1, 0, -0.999981, 0, -0.00619584, -13.608, 0, 4.6)
+transform = Transform3D(-0.00619584, 0, 0.999981, 0, 1, 0, -0.999981, 0, -0.00619584, -13.586531, 0.07, 4.709)
+starter_items = Array[ExtResource("15_qm1i5")]([ExtResource("16_qm1i5"), ExtResource("20_rock"), ExtResource("17_flwqg")])
 
 [node name="ChestObject2" parent="Interactables" unique_id=856623741 instance=ExtResource("5_b73po")]
 transform = Transform3D(0.999992, 0, 0.00403154, 0, 1, 0, -0.00403154, 0, 0.999992, -33.5677, 7.01364, 2.35008)
@@ -361,11 +366,11 @@ ladder_height = 4.5
 
 [node name="LadderCol" parent="Interactables/Ladder" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 0)
-shape = SubResource("BoxShape3D_0qj38")
+shape = SubResource("BoxShape3D_flwqg")
 
 [node name="Visual" parent="Interactables/Ladder/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_5hb6y")
-surface_material_override/0 = SubResource("StandardMaterial3D_qm1i5")
+mesh = SubResource("QuadMesh_rfg2k")
+surface_material_override/0 = SubResource("StandardMaterial3D_ylhxw")
 
 [node name="Ladder2" parent="Interactables" unique_id=743881373 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.954, 0.082, 29.509)
@@ -374,11 +379,11 @@ collision_mask = 2
 
 [node name="LadderCol" parent="Interactables/Ladder2" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-shape = SubResource("BoxShape3D_flwqg")
+shape = SubResource("BoxShape3D_rki70")
 
 [node name="Visual" parent="Interactables/Ladder2/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_rfg2k")
-surface_material_override/0 = SubResource("StandardMaterial3D_ylhxw")
+mesh = SubResource("QuadMesh_fwb4t")
+surface_material_override/0 = SubResource("StandardMaterial3D_3yhsj")
 
 [node name="Ladder5" parent="Interactables" unique_id=88960211 instance=ExtResource("4_a4kod")]
 transform = Transform3D(7.54979e-08, 0, -1, 0, 1, 0, 1, 0, 7.54979e-08, -13.812, 0, 1.5)
@@ -387,11 +392,11 @@ collision_mask = 2
 
 [node name="LadderCol" parent="Interactables/Ladder5" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-shape = SubResource("BoxShape3D_rki70")
+shape = SubResource("BoxShape3D_r4c5v")
 
 [node name="Visual" parent="Interactables/Ladder5/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_fwb4t")
-surface_material_override/0 = SubResource("StandardMaterial3D_3yhsj")
+mesh = SubResource("QuadMesh_l52tn")
+surface_material_override/0 = SubResource("StandardMaterial3D_vgws4")
 
 [node name="StaticBody3D" parent="Interactables/Ladder5" unique_id=756947520 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-4.3711402e-08, 0, 1, 0, 1, 0, -1, 0, -4.3711402e-08, 18.3, 0, 52.752)
@@ -417,11 +422,11 @@ collision_mask = 2
 
 [node name="LadderCol" parent="Interactables/Ladder3" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-shape = SubResource("BoxShape3D_r4c5v")
+shape = SubResource("BoxShape3D_4l0xh")
 
 [node name="Visual" parent="Interactables/Ladder3/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_l52tn")
-surface_material_override/0 = SubResource("StandardMaterial3D_vgws4")
+mesh = SubResource("QuadMesh_67m3d")
+surface_material_override/0 = SubResource("StandardMaterial3D_yvvfs")
 
 [node name="Ladder4" parent="Interactables" unique_id=2095761940 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -65.4717, 0.0596613, 19.9143)
@@ -431,11 +436,11 @@ ladder_height = 50.0
 
 [node name="LadderCol" parent="Interactables/Ladder4" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 25, 0)
-shape = SubResource("BoxShape3D_4l0xh")
+shape = SubResource("BoxShape3D_v6xu0")
 
 [node name="Visual" parent="Interactables/Ladder4/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_67m3d")
-surface_material_override/0 = SubResource("StandardMaterial3D_yvvfs")
+mesh = SubResource("QuadMesh_1axmg")
+surface_material_override/0 = SubResource("StandardMaterial3D_mvlo2")
 
 [node name="ControlCard" type="Control" parent="." unique_id=1053931259]
 layout_mode = 3

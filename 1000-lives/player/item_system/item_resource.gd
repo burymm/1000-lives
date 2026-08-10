@@ -1,3 +1,4 @@
+@tool
 extends Resource
 class_name ItemResource
 
@@ -22,6 +23,12 @@ var durability : int
 @export var max_damage : int = 3
 
 @export var physical_instance : PackedScene
+## Optional separate scene for the "worn" model. Used for the inventory icon
+## snapshot and as the fallback model mounted in a hand when the item is not
+## shown by a named hand template. Lets items whose worn model differs from
+## their world pickup (sword, shield) look the same in the menu as on the
+## character.
+@export var icon_instance : PackedScene
 @export var texture : Texture2D
 
 func _init():
@@ -47,5 +54,6 @@ func clone_item() -> ItemResource:
 	copy.min_damage = min_damage
 	copy.max_damage = max_damage
 	copy.physical_instance = physical_instance
+	copy.icon_instance = icon_instance
 	copy.texture = texture
 	return copy

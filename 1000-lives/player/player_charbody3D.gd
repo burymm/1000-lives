@@ -441,7 +441,7 @@ func _on_equipment_slot_changed(_slot):
 
 ## Makes the 3D hands mirror the logical equipment slots. The default sword and
 ## shield keep their detailed template models; any other item is shown by
-## mounting its physical pickup (frozen) in the matching hand.
+## mounting its worn model (icon_instance, or the physical pickup if none).
 func sync_hand_visuals():
 	if inventory_system == null:
 		return
@@ -467,10 +467,14 @@ func _update_hand_mount(_system : EquipmentSystem, _slot : String, _item : ItemR
 		template_node.visible = true
 		_system.current_equipment = template_node
 		return
-	if _item.physical_instance == null:
+	## Fall back to the item's worn model (icon_instance) before the world
+	## pickup, so e.g. a shield held in the right hand still looks like a shield
+	## instead of its rectangular pickup mesh.
+	var worn_scene = _item.icon_instance if _item.icon_instance != null else _item.physical_instance
+	if worn_scene == null:
 		_mount_fist(_system, pivot)
 		return
-	var display = _item.physical_instance.instantiate()
+	var display = worn_scene.instantiate()
 	display.name = "Display_" + _slot
 	if "mounted" in display:
 		display.mounted = true
@@ -645,6 +649,11 @@ func death():
 func system_visible(_system_node,_new_toggle):
 		if _system_node:
 			_system_node.visible = _new_toggle
+
+## Opens the chest storage panel next to the inventory menu.
+func open_chest_ui(_chest):
+	if player_menu:
+		player_menu.open_chest(_chest)
 
 func trigger_interact(interact_type:String):
 	if busy:

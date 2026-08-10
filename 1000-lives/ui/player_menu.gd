@@ -13,6 +13,13 @@ var use_button : Button
 var equip_button : Button
 var drop_button : Button
 
+## Chest (container) panel shown to the right of the inventory while a chest is
+## open. Mirrors the item grid but its items live in the chest's own storage.
+var chest_panel : PanelContainer
+var chest_grid : Control
+var chest_slot_buttons : Dictionary = {}
+var chest_inventory : ChestInventory
+
 var inventory_tab : HBoxContainer
 var equipment_tab : VBoxContainer
 var status_tab : VBoxContainer
@@ -81,6 +88,7 @@ func _on_icon_ready():
 	if visible:
 		_refresh_grid()
 		_refresh_char_slots()
+		_refresh_chest_grid()
 
 func _build_ui():
 	var background = ColorRect.new()
@@ -88,11 +96,6 @@ func _build_ui():
 	background.color = Color(0.04, 0.04, 0.05, 0.82)
 	background.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
-
-	var center = CenterContainer.new()
-	center.name = "Center"
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(center)
 
 	notice_label = Label.new()
 	notice_label.name = "NoticeLabel"
@@ -111,7 +114,10 @@ func _build_ui():
 	var window = PanelContainer.new()
 	window.name = "Window"
 	window.custom_minimum_size = Vector2(1350, 660)
-	center.add_child(window)
+	window.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	window.offset_left = 24
+	window.offset_top = 24
+	add_child(window)
 
 	var window_margin = MarginContainer.new()
 	window_margin.add_theme_constant_override("margin_left", 24)
@@ -187,6 +193,7 @@ func _build_ui():
 
 	var scroll = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	right_box.add_child(scroll)
 	item_grid = Control.new()
 	item_grid.name = "ItemGrid"
@@ -215,6 +222,31 @@ func _build_ui():
 	drop_button.focus_mode = Control.FOCUS_NONE
 	drop_button.pressed.connect(_on_drop_pressed)
 	action_bar.add_child(drop_button)
+
+	chest_panel = PanelContainer.new()
+	chest_panel.name = "ChestPanel"
+	chest_panel.custom_minimum_size = Vector2(360, 0)
+	chest_panel.visible = false
+	inventory_tab.add_child(chest_panel)
+	var chest_margin = MarginContainer.new()
+	chest_margin.add_theme_constant_override("margin_top", 12)
+	chest_margin.add_theme_constant_override("margin_bottom", 12)
+	chest_margin.add_theme_constant_override("margin_left", 12)
+	chest_margin.add_theme_constant_override("margin_right", 12)
+	chest_panel.add_child(chest_margin)
+	var chest_box = VBoxContainer.new()
+	chest_box.add_theme_constant_override("separation", 10)
+	chest_margin.add_child(chest_box)
+	var chest_header = HBoxContainer.new()
+	chest_box.add_child(chest_header)
+	var chest_title = Label.new()
+	chest_title.text = "Chest"
+	chest_title.add_theme_font_size_override("font_size", 18)
+	chest_header.add_child(chest_title)
+	chest_grid = Control.new()
+	chest_grid.name = "ChestGrid"
+	chest_grid.set_drag_forwarding(_get_drag_data, _can_drop_data, _drop_data)
+	chest_box.add_child(chest_grid)
 
 	equipment_tab = VBoxContainer.new()
 	equipment_tab.add_theme_constant_override("separation", 10)
@@ -273,8 +305,84 @@ func open_menu():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 func close_menu():
+	close_chest()
 	visible = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+## Shows the chest storage panel next to the inventory. `_chest` is the opened
+## chest object exposing a `storage` ChestInventory.
+func open_chest(_chest):
+	if chest_inventory and chest_inventory.inventory_updated.is_connected(_on_chest_updated):
+		chest_inventory.inventory_updated.disconnect(_on_chest_updated)
+	chest_inventory = _chest.storage if "storage" in _chest else null
+	if chest_inventory == null:
+		close_chest()
+		return
+	chest_inventory.inventory_updated.connect(_on_chest_updated)
+	chest_panel.visible = true
+	_refresh_chest_grid()
+	open_menu()
+
+## Hides the chest panel and forgets the open chest. The chest keeps its
+## contents — nothing is distributed automatically.
+func close_chest():
+	if chest_inventory and chest_inventory.inventory_updated.is_connected(_on_chest_updated):
+		chest_inventory.inventory_updated.disconnect(_on_chest_updated)
+	chest_inventory = null
+	chest_slot_buttons.clear()
+	if chest_panel:
+		chest_panel.visible = false
+
+func _on_chest_updated(_inventory):
+	_refresh_chest_grid()
+
+func _refresh_chest_grid():
+	if chest_grid == null:
+		return
+	for child in chest_grid.get_children():
+		child.free()
+	chest_slot_buttons.clear()
+	if chest_inventory == null:
+		return
+	var cols = chest_inventory.inv_columns
+	var rows = chest_inventory.inv_rows
+	chest_grid.custom_minimum_size = Vector2(cols * cell_size, rows * cell_size)
+	chest_grid.size = Vector2(cols * cell_size, rows * cell_size)
+	var backdrop := GridBackdrop.new()
+	backdrop.cols = cols
+	backdrop.rows = rows
+	backdrop.cell = cell_size
+	backdrop.custom_minimum_size = Vector2(cols * cell_size, rows * cell_size)
+	backdrop.size = Vector2(cols * cell_size, rows * cell_size)
+	chest_grid.add_child(backdrop)
+	for y in range(rows):
+		for x in range(cols):
+			var cell = Button.new()
+			cell.flat = true
+			cell.custom_minimum_size = Vector2(cell_size, cell_size)
+			cell.position = Vector2(x * cell_size, y * cell_size)
+			cell.size = Vector2(cell_size, cell_size)
+			cell.focus_mode = Control.FOCUS_NONE
+			cell.modulate = Color(1, 1, 1, 0.07)
+			cell.pressed.connect(_on_empty_pressed)
+			cell.set_drag_forwarding(_get_drag_data, _can_drop_data, _drop_data)
+			chest_grid.add_child(cell)
+	for i in range(chest_inventory.inventory.size()):
+		var item = chest_inventory.inventory[i]
+		var button = Button.new()
+		button.position = Vector2(item.grid_x * cell_size, item.grid_y * cell_size)
+		button.custom_minimum_size = Vector2(item.inv_width * cell_size, item.inv_height * cell_size)
+		button.size = Vector2(item.inv_width * cell_size, item.inv_height * cell_size)
+		button.focus_mode = Control.FOCUS_NONE
+		button.tooltip_text = item.item_name
+		button.modulate = Color(0.9, 0.95, 1.0)
+		var icon := ItemIcons.get_icon(item)
+		if icon:
+			button.icon = icon
+			button.expand_icon = true
+		button.set_drag_forwarding(_get_drag_data, _can_drop_data, _drop_data)
+		chest_grid.add_child(button)
+		chest_slot_buttons[i] = button
 
 func _on_inventory_updated(_inventory):
 	_refresh_grid()
@@ -518,6 +626,13 @@ func _get_drag_data(at_position):
 			if item:
 				set_drag_preview(_drag_preview(item.item_name))
 			return {"type": "inventory", "index": i}
+	if chest_inventory != null:
+		for i in chest_slot_buttons:
+			if chest_slot_buttons[i].get_global_rect().has_point(mp):
+				var item = chest_inventory.inventory[i]
+				if item:
+					set_drag_preview(_drag_preview(item.item_name))
+				return {"type": "chest", "index": i}
 	for slot in char_slots:
 		if char_slots[slot].get_global_rect().has_point(mp):
 			var item = inventory_system.equipment.get(slot)
@@ -529,25 +644,101 @@ func _get_drag_data(at_position):
 func _can_drop_data(at_position, data):
 	if typeof(data) != TYPE_DICTIONARY or not data.has("type"):
 		return false
-	if data["type"] == "inventory":
-		return _slot_at_mouse() != ""
-	return data["type"] == "equipment"
+	var on_char := _slot_at_mouse() != ""
+	var on_chest := _over_chest_panel()
+	var on_grid := _over_inventory_grid()
+	match data["type"]:
+		"inventory":
+			return on_char or on_chest
+		"equipment":
+			return true
+		"chest":
+			return on_char or on_grid
+	return false
 
 func _drop_data(at_position, data):
 	if inventory_system == null:
 		return
 	if typeof(data) != TYPE_DICTIONARY or not data.has("type"):
 		return
-	if data["type"] == "inventory":
-		var slot = _slot_at_mouse()
-		if slot != "":
-			inventory_system.equip_item(data["index"], slot)
-	elif data["type"] == "equipment":
-		var slot = _slot_at_mouse()
-		if slot != "":
-			inventory_system.move_equipped(data["slot"], slot)
-		else:
-			inventory_system.unequip_item(data["slot"])
+	var slot = _slot_at_mouse()
+	var on_chest := _over_chest_panel()
+	match data["type"]:
+		"inventory":
+			if slot != "":
+				inventory_system.equip_item(data["index"], slot)
+			elif on_chest:
+				_move_grid_to_chest(data["index"])
+		"equipment":
+			if on_chest:
+				_move_equipment_to_chest(data["slot"])
+			elif slot != "":
+				inventory_system.move_equipped(data["slot"], slot)
+			else:
+				inventory_system.unequip_item(data["slot"])
+		"chest":
+			if slot != "":
+				_move_chest_to_equipment(data["index"], slot)
+			elif _over_inventory_grid():
+				_move_chest_to_grid(data["index"])
+
+## True while the mouse is over the visible chest panel.
+func _over_chest_panel() -> bool:
+	if chest_panel == null or not chest_panel.visible or chest_inventory == null:
+		return false
+	return chest_panel.get_global_rect().has_point(get_global_mouse_position())
+
+## True while the mouse is over the player's inventory grid.
+func _over_inventory_grid() -> bool:
+	if item_grid == null or not item_grid.is_visible_in_tree():
+		return false
+	return item_grid.get_global_rect().has_point(get_global_mouse_position())
+
+func _move_grid_to_chest(_index):
+	if chest_inventory == null or _index < 0 or _index >= inventory_system.inventory.size():
+		return
+	var item = inventory_system.inventory[_index]
+	if item == null:
+		return
+	if not chest_inventory.can_fit(item):
+		_on_inventory_error("No room in chest")
+		return
+	chest_inventory.add_item(item)
+	inventory_system.remove_item(_index)
+
+func _move_chest_to_grid(_index):
+	if chest_inventory == null or _index < 0 or _index >= chest_inventory.inventory.size():
+		return
+	var item = chest_inventory.inventory[_index]
+	if item == null:
+		return
+	if not inventory_system.can_fit(item):
+		_on_inventory_error("No room in inventory")
+		return
+	inventory_system.add_item(item)
+	chest_inventory.remove_item(_index)
+
+func _move_equipment_to_chest(_slot):
+	if chest_inventory == null or not inventory_system.equipment.has(_slot):
+		return
+	var item = inventory_system.equipment[_slot]
+	if item == null:
+		return
+	if not chest_inventory.can_fit(item):
+		_on_inventory_error("No room in chest")
+		return
+	chest_inventory.add_item(item)
+	inventory_system.take_equipped(_slot)
+
+func _move_chest_to_equipment(_index, _slot):
+	if chest_inventory == null or _index < 0 or _index >= chest_inventory.inventory.size():
+		return
+	var item = chest_inventory.inventory[_index]
+	if item == null:
+		return
+	if not inventory_system.equip_external(item, _slot):
+		return
+	chest_inventory.remove_item(_index)
 
 func _slot_at_mouse() -> String:
 	var mp = get_global_mouse_position()
