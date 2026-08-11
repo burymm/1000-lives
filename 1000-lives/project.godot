@@ -23,6 +23,7 @@ buses/default_bus_layout="res://audio/default_bus_layout.tres"
 [autoload]
 
 ItemIcons="*res://player/item_system/item_icon_renderer.gd"
+RunTimer="*res://utility scripts/run_timer.gd"
 
 [display]
 

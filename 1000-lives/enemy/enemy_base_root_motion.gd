@@ -164,7 +164,9 @@ func _on_target_spotted(_spotted_target): # Updates from a TargetSensor if a tar
 	
 func _on_target_lost():
 	if is_instance_valid(target):
-		if is_instance_valid(chase_timer): # just trying to quiet some errors
+		# Physics can flush body_exited after the enemy has already left the
+		# tree during a scene teardown; skip the timer then.
+		if chase_timer.is_inside_tree():
 			chase_timer.start()
 
 func _on_chase_timer_timeout():

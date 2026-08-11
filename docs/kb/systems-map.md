@@ -6,7 +6,7 @@
 
 | Файл | Роль |
 |------|------|
-| `player_charbody3D.gd` / `.tscn` | Контроллер игрока (CharacterBody3D), движение/физика |
+| `player_charbody3D.gd` / `.tscn` | Контроллер игрока (CharacterBody3D), движение/физика. Смерть: падение ниже `fall_death_height` (Y, по умолч. `-5.0`) или `health_system.died` → `death()`: `RunTimer.on_player_death()`, сигнал `death_started`, через 3 с ждёт нажатия любой кнопки → `reload_current_scene()` |
 | `player_anim_tree.gd` | Управление AnimationTree игрока |
 | `player_start.gd` / `.tscn` | Точка входа/спавна игрока |
 | `player_stats.gd` | Статы персонажа |
@@ -34,9 +34,12 @@
 | `player_menu.gd` / `.tscn` | Главное меню игрока; **строится кодом**: сетка инвентаря + панель сундука, drag&drop |
 | `item_slot.gd` | Ячейка предмета (слот UI) |
 | `health_bar.gd` | Полоска здоровья |
-| `death_card.gd` | Карточка экрана смерти |
+| `death_card.gd` | Класс карточки смерти (`LifeDeathCard`); в сценах напрямую не подключён — см. карточку внутри `player_charbody3d.tscn` |
+| `run_time_card.gd` | Заполняет карточку смерти временами: «SURVIVED» (текущий забег) и «BEST» (рекорд) из autoload `RunTimer`; подключён к узлу `DeadBackground` |
 | `contol_card.gd` | Карточка управления |
 | `theme.tres` | Тема GUI проекта |
+
+> Карточка смерти живёт **внутри `player/player_charbody3d.tscn`** (`TriggeredSounds/LifeCardAnimations/`): `AnimationPlayer` (анимации `lifecard`/`deadcard`), `DeadBackground` (градиент-фон, анимируется), внутри него — `Label` «GAME OVER» + `RunTimeLabel`/`BestTimeLabel` (заполняет `run_time_card.gd`). Сигнал `death_started` игрока → анимация + звук.
 
 ## Враги (`enemy/`)
 
@@ -86,6 +89,7 @@
 |------|------|
 | `utility scripts/switch_systems/` | Переключатели/условия |
 | `utility scripts/switch_systems/condition_3d_gizmos/` | 3D-гизмо условий |
+| `utility scripts/run_timer.gd` | **Autoload `RunTimer`**: таймер забега (время выживания + лучший результат), сохранение в `user://` |
 | `demo_level/world_castle.tscn` | Главная демо-сцена |
 | `demo_level/gridmap/` | Gridmap и материалы |
 

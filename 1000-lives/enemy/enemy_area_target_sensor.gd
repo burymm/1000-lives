@@ -41,12 +41,16 @@ func eyeline_check():
 ## When a player body is in the field of view, check if they're in
 ## the enemy's eyeline, and if so, mark them as the current target
 func _on_body_entered(_body):
+	if not is_inside_tree():
+		return
 	if _body.is_in_group(target_group_name):
 		potential_target = _body
 		checking_active = true
 		eyeline_check()
 
 func _on_body_exited(_body):
+	if not is_inside_tree():
+		return
 	if _body.is_in_group(target_group_name):
 		target_lost.emit()
 

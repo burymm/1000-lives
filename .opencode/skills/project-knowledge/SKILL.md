@@ -61,5 +61,6 @@ description: Use when working in the 1000-lives Godot project and you need to un
 - `docs/kb/architecture.md` — запуск, autoload, структура.
 - `docs/kb/systems-map.md` — полная карта файлов.
 - `docs/kb/item-inventory.md` — детали инвентаря/сундуков/экипировки.
+- `docs/kb/level.md` — структура уровня (GridMap-террейн, контент, окружение) и как его редактировать.
 - `docs/kb/conventions.md` — соглашения, именование.
 - `doc/` — дизайн-доки (атрибуты, ресурсы, бестиарий, backlog). Концепция — `readme.md` в корне репо.

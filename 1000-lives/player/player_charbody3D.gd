@@ -74,6 +74,8 @@ signal damage_taken(by_what:EquipmentObject) # to indicate the damage value
 signal health_received(by_what:ItemObject)
 signal death_started
 var is_dead :bool = false
+## Falling below this world Y kills the player.
+@export var fall_death_height : float = -5.0
 
 @export var inventory_system : InventorySystem
 @export var item_system : ItemSystem
@@ -127,6 +129,7 @@ enum state {FREE,STATIC,CLIMB}
 signal changed_state(new_state: state)
 
 func _ready():
+	RunTimer.start_run()
 	if animation_tree:
 		animation_tree.animation_measured.connect(_on_animation_measured)
 		
@@ -192,6 +195,9 @@ func _physics_process(_delta):
 		# Walking faces +Z, climbing faces the wall along -Z: the cast must
 		# follow so it points at interactables/walls instead of the player's back.
 		sensor_cast.target_position = Vector3(0, 0, -1.5) if current_state == state.CLIMB else Vector3(0, 0, 1.5)
+	if not is_dead and global_position.y < fall_death_height:
+		death()
+		return
 	match current_state:
 		state.FREE:
 			rotate_player()
@@ -217,6 +223,8 @@ func _process(_delta):
 		interact_prompt.visible = is_instance_valid(interactable) and interactable is PickupObject
 	
 func _input(_event:InputEvent):
+	if is_dead:
+		return
 		# Update current orientation to camera when nothing pressed
 	if !Input.is_anything_pressed():
 		current_camera = get_viewport().get_camera_3d()
@@ -642,9 +650,23 @@ func death():
 	current_state = state.STATIC
 	hurt_cool_down.start(10)
 	is_dead = true
+	# Take the corpse off every physics layer: enemy target sensors stop
+	# overlapping it right away, so reload_current_scene()'s scene teardown
+	# doesn't fire body_exited against nodes that have already left the tree.
+	collision_layer = 0
+	RunTimer.on_player_death()
 	death_started.emit()
+	# Let the death card play out, then wait for the player to press any key
+	# before restarting the run.
 	await get_tree().create_timer(3).timeout
-	get_tree().reload_current_scene()
+	while Input.is_anything_pressed():
+		await get_tree().process_frame
+	while not Input.is_anything_pressed():
+		await get_tree().process_frame
+	# Reload at the end of the frame: reloading mid-frame tears down the scene
+	# while physics is still flushing body_entered/body_exited signals, which
+	# makes handlers run against nodes that already left the tree.
+	get_tree().call_deferred("reload_current_scene")
 		
 func system_visible(_system_node,_new_toggle):
 		if _system_node:

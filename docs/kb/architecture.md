@@ -12,6 +12,13 @@
 - Главная сцена: `res://demo_level/world_castle.tscn` (см. `project.godot` → `[application] run/main_scene`).
 - Autoload (`project.godot` → `[autoload]`):
   - `ItemIcons` = `res://player/item_system/item_icon_renderer.gd` — рендер иконок предметов в ячейках GridInventory (TextureRect прямо в ячейке).
+  - `RunTimer` = `res://utility scripts/run_timer.gd` — таймер забега: считает время выживания (см. `tasks/task4.md`). Отсчёт от спавна игрока до смерти (`player_charbody3D.gd` вызывает `RunTimer.start_run()` в `_ready()` и `RunTimer.on_player_death()` в `death()`). Лучшее время сохраняется в `user://run_timer.cfg` (переживает рестарт сцены и игры). Формат: `RunTimer.format_time()` — ММ:СС / ЧЧ:ММ:СС / ДД:ЧЧ:ММ:СС.
+
+## Цикл жизни и смерти игрока
+
+- Смерть наступает двумя путями: **урон** (`health_system.died`) или **падение** ниже `player_charbody3D.gd → fall_death_height` (экспорт, по умолч. `-5.0` по Y; проверка в `_physics_process`).
+- `death()` (`player_charbody3D.gd:645+`): стоп движения, `RunTimer.on_player_death()`, эмитит `death_started` (карточка смерти + звук), **через 3 с** (проигрыш анимации) ждёт **нажатия любой кнопки** (`Input.is_anything_pressed()`, сначала отпускание уже зажатых) и только потом `reload_current_scene()` — новый забег.
+- Пока `is_dead == true`, `_input` игрока полностью игнорируется (Esc не закрывает игру, меню не открывается).
 
 ## Editor-плагины
 
