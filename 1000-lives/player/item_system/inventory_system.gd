@@ -62,18 +62,51 @@ func drop_item(_index) -> bool:
 	var item = inventory[_index]
 	if item.physical_instance == null:
 		return false
-	var world_item = item.physical_instance.instantiate()
-	if world_item is RigidBody3D:
-		world_item.freeze = false
-	var parent = get_tree().current_scene
-	parent.add_child(world_item)
-	var drop_transform = signaling_node.global_transform.translated(signaling_node.global_transform.basis.z * 1.5).translated(Vector3.UP)
-	world_item.global_transform = drop_transform
+	if not _spawn_world_item(item):
+		return false
 	item.count -= 1
 	if item.count <= 0:
 		remove_item(_index)
 	else:
 		inventory_updated.emit(inventory)
+	return true
+
+## Drops the item equipped in _slot into the world and removes it from the slot.
+func drop_equipped(_slot : String) -> bool:
+	if _slot not in SLOTS or not equipment.has(_slot):
+		return false
+	var item = equipment[_slot]
+	if item.physical_instance == null:
+		return false
+	if not _spawn_world_item(item):
+		return false
+	item.count -= 1
+	if item.count <= 0:
+		take_equipped(_slot)
+	else:
+		equipment_changed.emit(_slot)
+	return true
+
+## Spawns a physical copy of `_item` in the world in front of the player,
+## charging the drop energy cost. Returns false if the item has no physical
+## scene or the player is unavailable.
+func _spawn_world_item(_item : ItemResource) -> bool:
+	if signaling_node == null:
+		return false
+	if "energy_system" in signaling_node and signaling_node.energy_system:
+		signaling_node.energy_system.spend_swings(1.0, _item.weight, "drop")
+	var world_item = _item.physical_instance.instantiate()
+	if world_item is PickupObject:
+		world_item.item_resource = _item
+	var parent = get_tree().current_scene
+	parent.add_child(world_item)
+	var drop_transform = signaling_node.global_transform.translated(signaling_node.global_transform.basis.z * 1.5).translated(Vector3.UP)
+	world_item.global_transform = drop_transform
+	# PickupObject._ready() freezes the body on enter-tree, so unfreeze only now:
+	# otherwise the dropped item would hover frozen in the air (and block the
+	# player against its mesh) instead of falling to the ground.
+	if world_item is RigidBody3D:
+		world_item.freeze = false
 	return true
 
 func _on_item_used_signal():
@@ -158,6 +191,30 @@ func unequip_item(_slot : String) -> bool:
 		return false
 	equipment.erase(_slot)
 	if not _find_spot(item):
+		equipment[_slot] = item
+		inventory_error.emit("No space in inventory")
+		return false
+	inventory.append(item)
+	current_item = inventory[0] if inventory.size() > 0 else null
+	inventory_updated.emit(inventory)
+	equipment_changed.emit(_slot)
+	return true
+
+## Returns the item in equipment _slot to the grid at the exact cell (_x, _y),
+## falling back to the first free spot if it cannot be placed there. Aborts if
+## the item no longer fits anywhere.
+func unequip_item_at(_slot : String, _x : int, _y : int) -> bool:
+	if _slot not in SLOTS or not equipment.has(_slot):
+		return false
+	var item = equipment[_slot]
+	if not can_fit(item):
+		inventory_error.emit("No space in inventory")
+		return false
+	equipment.erase(_slot)
+	if can_place_at(item, _x, _y):
+		item.grid_x = _x
+		item.grid_y = _y
+	elif not _find_spot(item):
 		equipment[_slot] = item
 		inventory_error.emit("No space in inventory")
 		return false

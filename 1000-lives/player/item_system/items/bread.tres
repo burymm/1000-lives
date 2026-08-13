@@ -7,4 +7,6 @@
 script = ExtResource("1_bread")
 item_name = "Bread"
 weight = 0.5
+energy = 10.0
+digest_time = 50.0
 physical_instance = ExtResource("2_bread")

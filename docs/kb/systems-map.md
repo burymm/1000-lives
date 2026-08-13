@@ -14,6 +14,7 @@
 | `player_targeting_system/player_targeting_system.gd` / `.tscn` | Система прицеливания: `eye_list.gd` (видимые цели), `gui_reticle.gd` (прицел) |
 | `player_interact_sensors/sensor_cast.gd` / `.tscn` | Сенсор интеракции (raycast, что в фокусе) |
 | `equipment_system/equipment_system.gd` / `.tscn` | Экипировка: руки `RightHand`/`LeftHand`, сигнал `equipment_changed` |
+| `energy_system.gd` | **Энергия игрока** (узел в `player_charbody3d.tscn`): масса (сила/10), расход (стояние/отдых/движение/лестница/бой), пороги (`can_move`/`can_attack`/`can_block`), отдых (R), восстановление едой (`energy`+`digest_time`), смерть при 0. См. [energy.md](energy.md) |
 | `equipment_system/equipment/` | 3D-визуалы: `sword.tscn`, `shield.tscn`, `Ax.tscn`, `torch_gadget.tscn` + `TorchFlame.gd`, `weapon_streak.gd` (след оружия) |
 | `item_system/item_system.gd` | Связка: подбор предметов из мира → инвентарь → иконки |
 | `item_system/inventory_system.gd` | Инвентарь игрока: `grid` (GridInventory) + `equipment` (EquipmentSystem), сигналы `item_added`/`item_removed`/`equipment_changed` |

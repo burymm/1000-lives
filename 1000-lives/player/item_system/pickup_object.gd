@@ -8,6 +8,11 @@ class_name PickupObject
 
 @export var item_resource : ItemResource
 @export var cooldown_time : float = 1.0
+## Per-pickup values so each bread/rock in the world can differ from the shared
+## .tres it comes from. -1 inherits the value from item_resource.
+@export_range(-1.0, 100000.0, 0.1) var weight : float = -1.0
+@export_range(-1.0, 100000.0, 1.0) var energy : float = -1.0
+@export_range(-1.0, 3600.0, 0.1) var digest_time : float = -1.0
 var object_type : String = "DRINK"
 var player_node : Node3D
 var throw_me : bool = false
@@ -30,12 +35,40 @@ func _ready():
 	freeze = true
 	body_entered.connect(_on_body_entered)
 
+## Resolved weight: per-pickup value, or the value from item_resource.
+func effective_weight() -> float:
+	if weight >= 0.0:
+		return weight
+	return item_resource.weight if item_resource else 0.0
+
+func effective_energy() -> float:
+	if energy >= 0.0:
+		return energy
+	return item_resource.energy if item_resource else 0.0
+
+func effective_digest_time() -> float:
+	if digest_time >= 0.0:
+		return digest_time
+	return item_resource.digest_time if item_resource else 0.0
+
+## A copy of item_resource with this pickup's per-pickup values applied, so the
+## item that lands in the player's inventory keeps them.
+func build_item() -> ItemResource:
+	var copy := item_resource.clone_item()
+	copy.weight = effective_weight()
+	copy.energy = effective_energy()
+	copy.digest_time = effective_digest_time()
+	return copy
+
 func activate(player = null):
 	if player != null:
 		if item_resource and player.inventory_system:
-			if not player.inventory_system.can_fit(item_resource):
+			var item := build_item()
+			if not player.inventory_system.can_fit(item):
 				return
-			player.inventory_system.add_item(item_resource)
+			player.inventory_system.add_item(item)
+			if "energy_system" in player and player.energy_system:
+				player.energy_system.spend_swings(2.0, item.weight, "pickup")
 		queue_free()
 		return
 	if throw_me:

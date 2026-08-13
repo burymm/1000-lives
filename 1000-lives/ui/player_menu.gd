@@ -5,6 +5,9 @@ extends Control
 
 var selected_index : int = -1
 var selected_button : Button
+## Equipment slot selected on the character silhouette ("" = none). Lets the
+## Drop/Use buttons act on the item worn in that slot.
+var selected_slot : String = ""
 
 var item_grid : Control
 var slot_buttons : Dictionary = {}
@@ -30,24 +33,17 @@ var char_icons : Dictionary = {}
 var notice_label : Label
 var notice_timer : SceneTreeTimer
 
-const SLOT_DEFS : Dictionary = {
-	"Head":      Vector4(200, 24, 112, 56),
-	"Torso":     Vector4(172, 100, 168, 100),
-	"RightHand": Vector4(56, 102, 88, 104),
-	"LeftHand":  Vector4(368, 102, 88, 104),
-	"Belt":      Vector4(200, 214, 112, 38),
-	"Legs":      Vector4(172, 272, 168, 120),
-}
+## Energy readouts on the Status tab (see tasks/task5.md).
+var energy_label : Label
+var drain_label : Label
 
-## Icon scale in the hand slots per item grid size (the slots are 2x wide, so
-## wide items need stronger shrinking to not dominate the hands).
-const HAND_ICON_SCALE : Dictionary = {
-	"1x1": 0.5,
-	"1x2": 0.5,
-	"1x3": 0.5,
-	"2x1": 0.5,
-	"2x2": 0.5,
-	"2x3": 0.5,
+const SLOT_DEFS : Dictionary = {
+	"Head":      Vector4(235, 170, 60, 56),
+	"Torso":     Vector4(202, 260, 120, 120),
+	"RightHand": Vector4(100, 280, 66, 140),
+	"LeftHand":  Vector4(355, 280, 66, 140),
+	"Belt":      Vector4(202, 400, 120, 40),
+	"Legs":      Vector4(180, 480, 168, 240),
 }
 
 var tab_buttons : Dictionary = {}
@@ -90,6 +86,18 @@ func _on_icon_ready():
 		_refresh_char_slots()
 		_refresh_chest_grid()
 
+## Live energy readout while the menu is open.
+func _process(_delta):
+	if visible:
+		_refresh_status()
+
+func _refresh_status():
+	var es = player_node.energy_system if player_node else null
+	if energy_label == null or es == null:
+		return
+	energy_label.text = "Energy: %d / %d" % [int(es.current_energy), int(es.max_energy)]
+	drain_label.text = "Drain while standing: %.1f / s" % es.standing_drain()
+
 func _build_ui():
 	var background = ColorRect.new()
 	background.name = "Background"
@@ -114,9 +122,11 @@ func _build_ui():
 	var window = PanelContainer.new()
 	window.name = "Window"
 	window.custom_minimum_size = Vector2(1350, 660)
-	window.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	window.set_anchors_preset(Control.PRESET_FULL_RECT)
 	window.offset_left = 24
 	window.offset_top = 24
+	window.offset_right = -24
+	window.offset_bottom = -24
 	add_child(window)
 
 	var window_margin = MarginContainer.new()
@@ -263,9 +273,16 @@ func _build_ui():
 	status_tab = VBoxContainer.new()
 	status_tab.visible = false
 	content_margin.add_child(status_tab)
-	var status_label = Label.new()
-	status_label.text = "Status"
-	status_tab.add_child(status_label)
+	var status_title = Label.new()
+	status_title.text = "Status"
+	status_title.add_theme_font_size_override("font_size", 20)
+	status_tab.add_child(status_title)
+	energy_label = Label.new()
+	energy_label.add_theme_font_size_override("font_size", 16)
+	status_tab.add_child(energy_label)
+	drain_label = Label.new()
+	drain_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	status_tab.add_child(drain_label)
 
 	_update_action_buttons()
 
@@ -393,6 +410,7 @@ func _refresh_grid():
 	slot_buttons.clear()
 	selected_index = -1
 	selected_button = null
+	selected_slot = ""
 	if inventory_system == null:
 		return
 	var cols = inventory_system.inv_columns
@@ -446,6 +464,7 @@ func _on_empty_pressed():
 		selected_button.modulate = Color(0.9, 0.95, 1.0)
 	selected_index = -1
 	selected_button = null
+	selected_slot = ""
 	_update_action_buttons()
 
 func _on_slot_pressed(_index):
@@ -453,19 +472,32 @@ func _on_slot_pressed(_index):
 		selected_button.modulate = Color(0.9, 0.95, 1.0)
 	selected_index = _index
 	selected_button = slot_buttons.get(_index)
+	selected_slot = ""
 	if selected_button:
 		selected_button.modulate = Color(1.0, 0.82, 0.35)
 	_update_action_buttons()
 
+## Selects the equipment slot clicked on the silhouette so the action buttons
+## (Drop) apply to the worn item.
+func _on_char_slot_pressed(_slot):
+	if selected_button:
+		selected_button.modulate = Color(0.9, 0.95, 1.0)
+	selected_index = -1
+	selected_button = null
+	selected_slot = _slot
+	_update_action_buttons()
+
 func _update_action_buttons():
 	var item = _selected_item()
+	if item == null and selected_slot != "" and inventory_system:
+		item = inventory_system.equipment.get(selected_slot, null)
 	if item == null:
 		use_button.disabled = true
 		equip_button.disabled = true
 		drop_button.disabled = true
 		return
 	use_button.disabled = item.object_type != "DRINK" and item.object_type != "THROWN"
-	equip_button.disabled = false
+	equip_button.disabled = selected_slot != ""
 	drop_button.disabled = item.physical_instance == null
 
 func _selected_item():
@@ -483,6 +515,10 @@ func _on_use_pressed():
 	player_node.use_item()
 
 func _on_drop_pressed():
+	if selected_slot != "" and inventory_system and inventory_system.equipment.has(selected_slot):
+		inventory_system.drop_equipped(selected_slot)
+		selected_slot = ""
+		return
 	if _selected_item() == null:
 		return
 	inventory_system.drop_item(selected_index)
@@ -515,6 +551,7 @@ func _refresh_equipment_tab():
 func _build_character_panel():
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(560, 470)
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var margin = MarginContainer.new()
 	margin.add_theme_constant_override("margin_top", 12)
 	margin.add_theme_constant_override("margin_bottom", 12)
@@ -537,21 +574,27 @@ func _build_character_panel():
 	return panel
 
 func _build_silhouette(_figure):
+	var bg_texture := load("res://assets/menu/user-bg.png") as Texture2D
+	if bg_texture:
+		var bg = TextureRect.new()
+		bg.name = "CharacterBg"
+		bg.texture = bg_texture
+		bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_figure.add_child(bg)
 	var body_color = Color(0.5, 0.46, 0.42, 0.9)
 	var limb_color = Color(0.42, 0.38, 0.35, 0.9)
-	var shapes = [
-		[Vector2(200, 24), Vector2(112, 56), body_color],
-		[Vector2(172, 100), Vector2(168, 100), body_color],
-		[Vector2(56, 102), Vector2(88, 104), limb_color],
-		[Vector2(368, 102), Vector2(88, 104), limb_color],
-		[Vector2(200, 214), Vector2(112, 38), body_color],
-		[Vector2(172, 272), Vector2(168, 120), body_color],
-	]
-	for shape in shapes:
+	# The silhouette is drawn from the same SLOT_DEFS the interactive slots use,
+	# so adjusting a slot position always moves its visible cell too.
+	var body_slots := ["Head", "Torso", "Belt", "Legs"]
+	for slot in SLOT_DEFS:
+		var def = SLOT_DEFS[slot]
 		var rect = ColorRect.new()
-		rect.position = shape[0]
-		rect.size = shape[1]
-		rect.color = shape[2]
+		rect.position = Vector2(def.x, def.y)
+		rect.size = Vector2(def.z, def.w)
+		rect.color = body_color if slot in body_slots else limb_color
 		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_figure.add_child(rect)
 	for slot in SLOT_DEFS:
@@ -566,6 +609,7 @@ func _build_silhouette(_figure):
 		btn.modulate = Color(1, 1, 1, 0.2)
 		btn.tooltip_text = slot
 		btn.set_drag_forwarding(_get_drag_data, _can_drop_data, _drop_data)
+		btn.pressed.connect(_on_char_slot_pressed.bind(slot))
 		var icon = TextureRect.new()
 		icon.name = "Icon"
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -597,24 +641,51 @@ func _refresh_char_slots():
 		if item and item_icon:
 			icon.texture = item_icon
 			icon.visible = true
-			# Hand slots are 2x wide; wide items (shields, rocks, potions) get
-			# explicit smaller scales so they read as props in the hands while
-			# the sword (1x3) keeps its reference size.
-			var key := "%dx%d" % [item.inv_width, item.inv_height]
-			var s := float(HAND_ICON_SCALE.get(key, 0.33))
-			icon.pivot_offset = icon.size / 2.0
-			icon.scale = Vector2(s, s)
+			_size_slot_icon(icon, item_icon, slot)
 		else:
 			icon.texture = null
 			icon.visible = false
 			icon.scale = Vector2.ONE
+			icon.set_anchors_preset(Control.PRESET_FULL_RECT)
+			icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		var btn : Button = char_slots[slot]
-		btn.modulate = Color(1, 1, 1, 1.0) if item else Color(1, 1, 1, 0.2)
+		if item and slot == selected_slot:
+			btn.modulate = Color(1.0, 0.82, 0.35)
+		else:
+			btn.modulate = Color(1, 1, 1, 1.0) if item else Color(1, 1, 1, 0.2)
 		btn.tooltip_text = slot + (" — " + item.item_name if item else "")
 
 func _on_equipment_changed(_slot):
 	_refresh_char_slots()
 	_refresh_equipment_tab()
+
+## Sizes a character-slot icon from the slot geometry in SLOT_DEFS and the
+## icon's actual pixel size: scale = min(slot_w / icon_w, slot_h / icon_h), so
+## the item's longest side fits the slot, then centers it. An extra
+## SLOT_ICON_SHRINK factor keeps icons slightly smaller than the slot so they
+## read as props (0.8 tuned on the head; a single factor keeps all slots in
+## the same visual style).
+const SLOT_ICON_SHRINK := 0.8;
+
+func _size_slot_icon(_icon : TextureRect, _texture : Texture2D, _slot : String):
+	var def = SLOT_DEFS[_slot]
+	var slot_w : float = def.z
+	var slot_h : float = def.w
+	var tex_w : float = _texture.get_width()
+	var tex_h : float = _texture.get_height()
+	var s := 1.0
+	if tex_w > 0 and tex_h > 0:
+		s = minf(slot_w / tex_w, slot_h / tex_h) * SLOT_ICON_SHRINK
+	# Without IGNORE_SIZE the TextureRect's minimum size is the texture's native
+	# size, so a computed smaller rect gets clamped back up and SLOT_ICON_SHRINK
+	# stops having any effect.
+	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_icon.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_icon.size = Vector2(tex_w * s, tex_h * s)
+	_icon.position = Vector2((slot_w - _icon.size.x) * 0.5, (slot_h - _icon.size.y) * 0.5)
+	_icon.stretch_mode = TextureRect.STRETCH_SCALE
+	_icon.scale = Vector2.ONE
+	_icon.pivot_offset = Vector2.ZERO
 
 func _get_drag_data(at_position):
 	if inventory_system == null:
@@ -624,20 +695,20 @@ func _get_drag_data(at_position):
 		if slot_buttons[i].get_global_rect().has_point(mp):
 			var item = inventory_system.inventory[i]
 			if item:
-				set_drag_preview(_drag_preview(item.item_name))
+				set_drag_preview(_drag_preview(item))
 			return {"type": "inventory", "index": i}
 	if chest_inventory != null:
 		for i in chest_slot_buttons:
 			if chest_slot_buttons[i].get_global_rect().has_point(mp):
 				var item = chest_inventory.inventory[i]
 				if item:
-					set_drag_preview(_drag_preview(item.item_name))
+					set_drag_preview(_drag_preview(item))
 				return {"type": "chest", "index": i}
 	for slot in char_slots:
 		if char_slots[slot].get_global_rect().has_point(mp):
 			var item = inventory_system.equipment.get(slot)
 			if item:
-				set_drag_preview(_drag_preview(item.item_name))
+				set_drag_preview(_drag_preview(item))
 			return {"type": "equipment", "slot": slot}
 	return null
 
@@ -649,11 +720,11 @@ func _can_drop_data(at_position, data):
 	var on_grid := _over_inventory_grid()
 	match data["type"]:
 		"inventory":
-			return on_char or on_chest
+			return on_char or on_chest or on_grid
 		"equipment":
 			return true
 		"chest":
-			return on_char or on_grid
+			return on_char or on_grid or on_chest
 	return false
 
 func _drop_data(at_position, data):
@@ -663,24 +734,53 @@ func _drop_data(at_position, data):
 		return
 	var slot = _slot_at_mouse()
 	var on_chest := _over_chest_panel()
+	var on_grid := _over_inventory_grid()
 	match data["type"]:
 		"inventory":
 			if slot != "":
 				inventory_system.equip_item(data["index"], slot)
 			elif on_chest:
 				_move_grid_to_chest(data["index"])
+			elif on_grid:
+				_move_within_grid(data["index"])
 		"equipment":
 			if on_chest:
 				_move_equipment_to_chest(data["slot"])
 			elif slot != "":
 				inventory_system.move_equipped(data["slot"], slot)
+			elif on_grid:
+				var cell := _grid_cell_at_mouse(item_grid)
+				inventory_system.unequip_item_at(data["slot"], cell.x, cell.y)
 			else:
 				inventory_system.unequip_item(data["slot"])
 		"chest":
 			if slot != "":
 				_move_chest_to_equipment(data["index"], slot)
-			elif _over_inventory_grid():
+			elif on_grid:
 				_move_chest_to_grid(data["index"])
+			elif on_chest:
+				_move_within_chest(data["index"])
+
+## Relocates a player-inventory item to the grid cell under the mouse.
+func _move_within_grid(_index):
+	if inventory_system == null:
+		return
+	var cell := _grid_cell_at_mouse(item_grid)
+	if not inventory_system.move_item(_index, cell.x, cell.y):
+		_on_inventory_error("Can't place item here")
+
+## Relocates a chest item to the chest grid cell under the mouse.
+func _move_within_chest(_index):
+	if chest_inventory == null:
+		return
+	var cell := _grid_cell_at_mouse(chest_grid)
+	if not chest_inventory.move_item(_index, cell.x, cell.y):
+		_on_inventory_error("Can't place item here")
+
+## The cell of `_grid` currently under the mouse (in cell coordinates).
+func _grid_cell_at_mouse(_grid : Control) -> Vector2i:
+	var local := _grid.get_global_transform_with_canvas().affine_inverse() * get_global_mouse_position()
+	return Vector2i(floor(local.x / cell_size), floor(local.y / cell_size))
 
 ## True while the mouse is over the visible chest panel.
 func _over_chest_panel() -> bool:
@@ -759,18 +859,43 @@ func _hide_notice(_timer):
 	if is_instance_valid(notice_label) and _timer == notice_timer:
 		notice_label.visible = false
 
-func _drag_preview(_text) -> Label:
-	var preview = Label.new()
-	preview.text = _text
-	var sb = StyleBoxFlat.new()
-	sb.bg_color = Color(0.1, 0.1, 0.15, 0.9)
-	sb.corner_radius_top_left = 4
-	sb.corner_radius_top_right = 4
-	sb.corner_radius_bottom_left = 4
-	sb.corner_radius_bottom_right = 4
-	sb.content_margin_left = 10
-	sb.content_margin_right = 10
-	sb.content_margin_top = 5
-	sb.content_margin_bottom = 5
-	preview.add_theme_stylebox_override("normal", sb)
+## Drag preview: a silhouette of the item's grid footprint with its icon
+## rendered inside, so the player sees exactly what is being moved and how much
+## space it occupies before the drop.
+func _drag_preview(_item) -> Control:
+	var preview = Control.new()
+	var w : int = _item.inv_width * cell_size
+	var h : int = _item.inv_height * cell_size
+	preview.custom_minimum_size = Vector2(w, h)
+	preview.size = Vector2(w, h)
+
+	var footprint = ColorRect.new()
+	footprint.name = "Footprint"
+	footprint.set_anchors_preset(Control.PRESET_FULL_RECT)
+	footprint.color = Color(0.1, 0.1, 0.15, 0.55)
+	footprint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	preview.add_child(footprint)
+
+	var icon := ItemIcons.get_icon(_item)
+	if icon:
+		var icon_rect = TextureRect.new()
+		icon_rect.name = "Icon"
+		icon_rect.texture = icon
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		preview.add_child(icon_rect)
+
+	var name_label = Label.new()
+	name_label.name = "Name"
+	name_label.text = _item.item_name
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	name_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	name_label.add_theme_constant_override("outline_size", 4)
+	preview.add_child(name_label)
 	return preview

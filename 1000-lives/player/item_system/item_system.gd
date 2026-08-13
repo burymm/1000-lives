@@ -38,16 +38,18 @@ func _on_inventory_updated(inventory):
 		return
 	var current_item = inventory[0]
 	if current_item.count > 0:
-			if current_item.physical_instance:
-				var item_instance = current_item.physical_instance
-				var new_item :RigidBody3D = item_instance.instantiate()
-				if "mounted" in new_item:
-					new_item.mounted = true
-				if "item_resource" in new_item:
-					new_item.item_resource = current_item
-				# pass ItemResource data to this new physical object
-				storage_mount.call_deferred("add_child",new_item)
-			
+		## Rocks (THROWN) are carried in the inventory grid, never worn. Mounting
+		## their large world model on the hip wraps it around the player and makes
+		## it look like the item never entered the inventory.
+		if current_item.object_type != "THROWN" and current_item.physical_instance:
+			var item_instance = current_item.physical_instance
+			var new_item :RigidBody3D = item_instance.instantiate()
+			if "mounted" in new_item:
+				new_item.mounted = true
+			if "item_resource" in new_item:
+				new_item.item_resource = current_item
+			# pass ItemResource data to this new physical object
+			storage_mount.call_deferred("add_child",new_item)
 			
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

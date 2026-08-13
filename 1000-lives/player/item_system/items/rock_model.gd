@@ -30,9 +30,9 @@ func _setup():
 	var weight := 1.0
 	var parent := get_parent()
 
-	# Fetch weight from the parent if available
+	# Fetch weight from the parent if available (respects per-pickup overrides)
 	if parent and "item_resource" in parent and parent.item_resource is ItemResource:
-		weight = parent.item_resource.weight
+		weight = parent.effective_weight() if parent.has_method("effective_weight") else parent.item_resource.weight
 
 	# 1. Determine the rock variant index. Fallback to inspector property if weight is missing
 	var variant: int = WEIGHT_TO_INDEX.get(weight, rock_variant)

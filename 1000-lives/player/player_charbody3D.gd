@@ -68,6 +68,8 @@ signal block_started
 
 ## The HealthSystem node that will take in information about damage and healing received.
 @export var health_system : HealthSystem
+## Energy is the life force powering every action; see tasks/task5.md.
+@export var energy_system : EnergySystem
 @onready var hurt_cool_down = Timer.new() # while running, player can't be hurt
 signal hurt_started # to start the animation
 signal damage_taken(by_what:EquipmentObject) # to indicate the damage value
@@ -85,6 +87,13 @@ signal item_change_started
 signal item_change_ended(current_item:ItemObject)
 signal use_item_started
 signal throw_started
+
+## Debug HUD toggled with "*" (numpad). Shows energy, current drain and the
+## last discrete action costs (attack/jump/dodge/throw/pickup/drop/fall).
+var debug_hud_panel : Control
+var debug_hud_label : Label
+var debug_spend_log : Array = [] # [time_ms, label, amount]
+const DEBUG_LOG_TIMEOUT : float = 12.0
 signal item_used
 
 # Jump and Gravity
@@ -148,6 +157,10 @@ func _ready():
 			
 	if health_system:
 		health_system.died.connect(death)
+
+	if energy_system:
+		energy_system.rest_toggled.connect(_on_rest_toggled)
+		energy_system.spent_report.connect(_on_energy_spent)
 		
 	climb_started.connect(_on_climb_started)
 		
@@ -222,6 +235,9 @@ func _process(_delta):
 	if interact_prompt:
 		interact_prompt.visible = is_instance_valid(interactable) and interactable is PickupObject
 	
+	if debug_hud_panel and debug_hud_panel.visible:
+		_update_debug_hud()
+	
 func _input(_event:InputEvent):
 	if is_dead:
 		return
@@ -241,6 +257,10 @@ func _input(_event:InputEvent):
 		
 	if _event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
+
+	if _event.is_action_pressed("debug_hud") \
+			or (_event is InputEventKey and not _event.echo and _event.unicode == 42):
+		_toggle_debug_hud()
 		
 	## strafe toggle on/off
 	if _event.is_action_pressed("strafe_target"):
@@ -251,53 +271,59 @@ func _input(_event:InputEvent):
 		secondary_action = true
 	else:
 		secondary_action = false
-	
-	if current_state == state.FREE:
-		if _event.is_action_pressed("use_weapon_light"):
-			attack()
-		elif _event.is_action_pressed("use_weapon_strong"):
-			attack_strong()
-				
-		if is_on_floor():
-			# if interactable exists, activate its action
-			if _event.is_action_pressed("interact"):
-				interact()
-			
-			elif _event.is_action_pressed("jump"):
-				jump()
-				
-			elif _event.is_action_pressed("dodge_dash"):
-				dodge_or_sprint()
-				
-			elif _event.is_action_released("dodge_dash") \
-			&& sprint_timer.time_left:
-				dodge()
-			
-			elif _event.is_action_pressed("change_primary"):
-				weapon_change()
-			elif _event.is_action_pressed("change_secondary"):
-				gadget_change()
 
-			elif _event.is_action_pressed("use_gadget_strong"): 
-				use_gadget()
-					
-			elif _event.is_action_pressed("use_gadget_light"):
-				if secondary_action:
-					use_gadget()
-				else:
-					start_guard()
-			
-			elif _event.is_action_pressed("change_item"):
-				item_change()
-			elif _event.is_action_pressed("use_item"): 
-				use_item()
-			elif _event.is_action_pressed("throw_item"):
-				throw_equipped()
+	if _event.is_action_pressed("rest"):
+		toggle_rest()
 	
-	elif current_state == state.CLIMB:
-			#aiming = false
-			if _event.is_action_pressed("interact"):
-				abort_climb()
+	if not _is_resting():
+		if current_state == state.FREE:
+			if _event.is_action_pressed("use_weapon_light") and _can_fight():
+				attack()
+			elif _event.is_action_pressed("use_weapon_strong") and _can_fight():
+				attack_strong()
+					
+			if is_on_floor():
+				# if interactable exists, activate its action
+				if _event.is_action_pressed("interact"):
+					interact()
+				
+				elif _event.is_action_pressed("jump") and _can_move():
+					jump()
+					
+				elif _event.is_action_pressed("dodge_dash") and _can_move():
+					dodge_or_sprint()
+					
+				elif _event.is_action_released("dodge_dash") \
+				&& sprint_timer.time_left and _can_move():
+					dodge()
+				
+				elif _event.is_action_pressed("change_primary"):
+					weapon_change()
+				elif _event.is_action_pressed("change_secondary"):
+					gadget_change()
+
+				elif _event.is_action_pressed("use_gadget_strong") and _can_fight(): 
+					use_gadget()
+						
+				elif _event.is_action_pressed("use_gadget_light"):
+					if secondary_action:
+						if _can_fight():
+							use_gadget()
+					else:
+						start_guard()
+				
+				elif _event.is_action_pressed("change_item"):
+					item_change()
+				elif _event.is_action_pressed("throw_item"):
+					throw_equipped()
+		
+		elif current_state == state.CLIMB:
+				#aiming = false
+				if _event.is_action_pressed("interact"):
+					abort_climb()
+	
+	if sprinting and not _can_move():
+		end_sprint()
 	
 	if sprinting:
 		
@@ -310,6 +336,107 @@ func _input(_event:InputEvent):
 	if _event.is_action_released("use_gadget_light"):
 		if not secondary_action:
 			end_guard()
+
+func _is_resting() -> bool:
+	return energy_system != null and energy_system.resting
+
+func _can_fight() -> bool:
+	return not _is_resting() and (energy_system == null or energy_system.can_attack())
+
+func _can_block_guard() -> bool:
+	return not _is_resting() and (energy_system == null or energy_system.can_block())
+
+func _can_move() -> bool:
+	return not _is_resting() and (energy_system == null or energy_system.can_move())
+
+## R toggles rest mode (see tasks/task5.md). While resting the character cannot
+## move or fight; only the inventory stays available.
+func toggle_rest():
+	if energy_system:
+		energy_system.toggle_rest()
+
+func _on_rest_toggled(_resting):
+	if _resting:
+		end_sprint()
+		end_guard()
+	var rest_label := get_node_or_null("GUI/RestLabel")
+	if rest_label:
+		rest_label.visible = _resting
+
+# ------------------------------------------------------------------ Debug HUD
+
+func _toggle_debug_hud():
+	if debug_hud_panel == null:
+		_build_debug_hud()
+	if debug_hud_panel:
+		debug_hud_panel.visible = not debug_hud_panel.visible
+		if debug_hud_panel.visible:
+			_update_debug_hud()
+
+func _build_debug_hud():
+	var layer := CanvasLayer.new()
+	layer.name = "DebugHUD"
+	layer.layer = 20
+	add_child(layer)
+	var panel := PanelContainer.new()
+	panel.position = Vector2(16, 16)
+	layer.add_child(panel)
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0, 0, 0, 0.6)
+	sb.corner_radius_top_left = 6
+	sb.corner_radius_top_right = 6
+	sb.corner_radius_bottom_left = 6
+	sb.corner_radius_bottom_right = 6
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 8
+	panel.add_theme_stylebox_override("panel", sb)
+	var label := Label.new()
+	label.add_theme_color_override("font_color", Color(0.75, 1.0, 0.75))
+	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	label.add_theme_constant_override("outline_size", 4)
+	label.add_theme_font_size_override("font_size", 16)
+	panel.add_child(label)
+	panel.visible = false
+	debug_hud_panel = panel
+	debug_hud_label = label
+
+func _on_energy_spent(_amount : float, _label : String):
+	debug_spend_log.append([Time.get_ticks_msec(), _label, _amount])
+	while debug_spend_log.size() > 12:
+		debug_spend_log.pop_front()
+
+func _update_debug_hud():
+	var es := energy_system
+	if debug_hud_label == null:
+		return
+	if es == null:
+		debug_hud_label.text = "no EnergySystem"
+		return
+	var now := Time.get_ticks_msec()
+	var lines : Array[String] = []
+	lines.append("ENERGY: %d / %d" % [int(es.current_energy), int(es.max_energy)])
+	lines.append("DRAIN: %.3f /s   %s" % [es.last_drain_per_sec, es.last_drain_mode])
+	lines.append("MASS: %.1f kg   step %.2f   swing %.2f   block %.2f" \
+		% [es.total_mass(), es.step_cost(), es.swing_cost(), es.block_cost()])
+	lines.append("thresholds: move %.1f  attack %.1f  block %.1f" \
+		% [50.0 * es.step_cost(), 50.0 * es.swing_cost(), 30.0 * es.block_cost()])
+	lines.append("")
+	lines.append("last actions:")
+	var shown := 0
+	for i in range(debug_spend_log.size() - 1, -1, -1):
+		var entry = debug_spend_log[i]
+		var age: float = (now - int(entry[0])) / 1000.0
+		if age > DEBUG_LOG_TIMEOUT:
+			continue
+		lines.append("%.1fs  %s  %.2f" % [age, entry[1], entry[2]])
+		shown += 1
+		if shown >= 8:
+			break
+	if shown == 0:
+		lines.append("(none)")
+	debug_hud_label.text = "\n".join(lines)
 
 func apply_gravity(_delta):
 	if !is_on_floor() \
@@ -564,6 +691,8 @@ func item_change():
 	slowed = false
 	
 func start_guard(): # Guarding, and for a short window, parring is possible
+	if not _can_block_guard():
+		return
 	slowed = true
 	guarding = true
 	parry_active = true
@@ -624,7 +753,7 @@ func use_item():
 	slowed = false
 
 func throw_equipped():
-	if busy or inventory_system == null:
+	if busy or inventory_system == null or not _can_fight():
 		return
 	var item = inventory_system.get_hand_item()
 	if item == null or item.count <= 0:
@@ -706,6 +835,8 @@ func jump():
 
 func set_root_move(delta):
 	input_dir = Input.get_vector("move_left","move_right","move_up","move_down")
+	if not _can_move():
+		input_dir = Vector2.ZERO
 	#set_quaternion(get_quaternion() * animation_tree.get_root_motion_rotation())
 	var rate : float # imiates directional change acceleration rate
 	if is_on_floor():
@@ -725,6 +856,8 @@ func set_root_move(delta):
 	
 func set_root_climb(delta):
 	input_dir = Input.get_vector("move_left","move_right","move_up","move_down")
+	if not _can_move():
+		input_dir = Vector2.ZERO
 	# Magnet: pin the player to the ladder anchor (X/Z) every frame so they
 	# can't drift off or be pushed away. Only vertical motion is allowed.
 	var pin := global_position

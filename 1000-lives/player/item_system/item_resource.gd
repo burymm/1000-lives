@@ -22,6 +22,12 @@ var durability : int
 @export var min_damage : int = 1
 @export var max_damage : int = 3
 
+## Total energy the item restores when consumed (0 = does not restore).
+@export var energy : float = 0.0
+## Seconds over which the energy is digested (speed = energy / digest_time).
+## Example: bread 5000 energy over 5 s → 1000 per second.
+@export var digest_time : float = 0.0
+
 @export var physical_instance : PackedScene
 ## Optional separate scene for the "worn" model. Used for the inventory icon
 ## snapshot and as the fallback model mounted in a hand when the item is not
@@ -53,6 +59,8 @@ func clone_item() -> ItemResource:
 	copy.damage_type = damage_type
 	copy.min_damage = min_damage
 	copy.max_damage = max_damage
+	copy.energy = energy
+	copy.digest_time = digest_time
 	copy.physical_instance = physical_instance
 	copy.icon_instance = icon_instance
 	copy.texture = texture

@@ -17,9 +17,7 @@
 [ext_resource type="Script" uid="uid://bg0dt1gqgfqm1" path="res://player/item_system/item_resource.gd" id="15_qm1i5"]
 [ext_resource type="PackedScene" uid="uid://cq2lr6sclvutj" path="res://enemy/enemy_base_root_motion.tscn" id="15_yac72"]
 [ext_resource type="PackedScene" path="res://player/item_system/items/bread.tscn" id="16_bread"]
-[ext_resource type="Resource" path="res://player/item_system/items/sword.tres" id="16_qm1i5"]
 [ext_resource type="Resource" uid="uid://l1cbep47h18j" path="res://player/item_system/items/bread.tres" id="17_bread"]
-[ext_resource type="Resource" uid="uid://dyscly38fswoe" path="res://player/item_system/items/shield.tres" id="17_flwqg"]
 [ext_resource type="PackedScene" uid="uid://bjtuv51f5ahfr" path="res://player/item_system/items/rock.tscn" id="18_rock"]
 [ext_resource type="Resource" uid="uid://ydudonc1owo2" path="res://player/item_system/items/rock_small.tres" id="19_rock"]
 [ext_resource type="Resource" uid="uid://c1s43mxuwbk77" path="res://player/item_system/items/rock.tres" id="20_rock"]
@@ -91,13 +89,13 @@ _data = {
 }
 point_count = 4
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_flwqg"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_5hb6y"]
 size = Vector3(0.7, 4.5, 0.35)
 
-[sub_resource type="QuadMesh" id="QuadMesh_rfg2k"]
+[sub_resource type="QuadMesh" id="QuadMesh_qm1i5"]
 size = Vector2(0.7, 4.4)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ylhxw"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flwqg"]
 transparency = 1
 cull_mode = 2
 albedo_texture = ExtResource("13_6npoa")
@@ -107,13 +105,13 @@ heightmap_min_layers = 8
 heightmap_max_layers = 32
 uv1_scale = Vector3(1, 11.67347, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_rki70"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_rfg2k"]
 size = Vector3(0.7, 5, 0.35)
 
-[sub_resource type="QuadMesh" id="QuadMesh_fwb4t"]
+[sub_resource type="QuadMesh" id="QuadMesh_ylhxw"]
 size = Vector2(0.7, 4.9)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3yhsj"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rki70"]
 transparency = 1
 cull_mode = 2
 albedo_texture = ExtResource("13_6npoa")
@@ -123,13 +121,13 @@ heightmap_min_layers = 8
 heightmap_max_layers = 32
 uv1_scale = Vector3(1, 13, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_r4c5v"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_fwb4t"]
 size = Vector3(0.7, 5, 0.35)
 
-[sub_resource type="QuadMesh" id="QuadMesh_l52tn"]
+[sub_resource type="QuadMesh" id="QuadMesh_3yhsj"]
 size = Vector2(0.7, 4.9)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vgws4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4c5v"]
 transparency = 1
 cull_mode = 2
 albedo_texture = ExtResource("13_6npoa")
@@ -139,13 +137,13 @@ heightmap_min_layers = 8
 heightmap_max_layers = 32
 uv1_scale = Vector3(1, 13, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_4l0xh"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_l52tn"]
 size = Vector3(0.7, 5, 0.35)
 
-[sub_resource type="QuadMesh" id="QuadMesh_67m3d"]
+[sub_resource type="QuadMesh" id="QuadMesh_vgws4"]
 size = Vector2(0.7, 4.9)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yvvfs"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4l0xh"]
 transparency = 1
 cull_mode = 2
 albedo_texture = ExtResource("13_6npoa")
@@ -155,13 +153,13 @@ heightmap_min_layers = 8
 heightmap_max_layers = 32
 uv1_scale = Vector3(1, 13, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_v6xu0"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_67m3d"]
 size = Vector3(0.7, 50, 0.35)
 
-[sub_resource type="QuadMesh" id="QuadMesh_1axmg"]
+[sub_resource type="QuadMesh" id="QuadMesh_yvvfs"]
 size = Vector2(0.7, 49.9)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mvlo2"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v6xu0"]
 transparency = 1
 cull_mode = 2
 albedo_texture = ExtResource("13_6npoa")
@@ -206,6 +204,7 @@ navigation_mesh = SubResource("NavigationMesh_8axki")
 [node name="Staging" parent="NavigationRegion3D" unique_id=1938958405 instance=ExtResource("7_p8o0k")]
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="NavigationRegion3D" unique_id=579094475]
+visible = false
 navigation_mesh = SubResource("NavigationMesh_8axki")
 
 [node name="Staging" parent="NavigationRegion3D/NavigationRegion3D" unique_id=603047535 instance=ExtResource("7_p8o0k")]
@@ -224,6 +223,9 @@ item_resource = ExtResource("17_bread")
 [node name="BreadPickup3" parent="." unique_id=2147400003 instance=ExtResource("16_bread")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.2, 0.07, 3.4)
 item_resource = ExtResource("17_bread")
+weight = 1.0
+energy = 5.0
+digest_time = 15.0
 
 [node name="RockSmall" parent="." unique_id=2147400004 instance=ExtResource("18_rock")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0.07, 4.2)
@@ -237,11 +239,11 @@ item_resource = ExtResource("21_rock")
 
 [node name="RockLarge" parent="." unique_id=2147400006 instance=ExtResource("18_rock")]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -4.5, 0.07, 4.8)
-mass = 5.0
+mass = 100.0
 item_resource = ExtResource("22_rock")
 
 [node name="RockBoulder" parent="." unique_id=2147400007 instance=ExtResource("18_rock")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.147341, 0.07, 7.2257695)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -4.147341, 0.07, 7.2257695)
 mass = 10.0
 item_resource = ExtResource("23_rock")
 
@@ -311,7 +313,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.4471, 0, 30.6534)
 curve = SubResource("Curve3D_2c2rs")
 
 [node name="EnemyPatrolPoint" type="PathFollow3D" parent="Enemies/PatrolPath" unique_id=931426795]
-transform = Transform3D(0.9997316, 0, -0.022516366, 0, 1, 0, 0.022516366, 0, 0.9997316, -0.43294, 0, -0.97773)
+transform = Transform3D(0.9997315, 0, -0.022516362, 0, 1, 0, 0.022516362, 0, 0.9997315, -0.43294, 0, -0.97773)
 script = ExtResource("6_i73lt")
 
 [node name="PatrolArea2" type="Path3D" parent="Enemies" unique_id=173112507]
@@ -338,7 +340,7 @@ starter_items = Array[ExtResource("15_qm1i5")]([ExtResource("17_bread"), ExtReso
 
 [node name="ChestObjectRoom" parent="Interactables" unique_id=693066672 instance=ExtResource("5_b73po")]
 transform = Transform3D(-0.00619584, 0, 0.999981, 0, 1, 0, -0.999981, 0, -0.00619584, -13.586531, 0.07, 4.709)
-starter_items = Array[ExtResource("15_qm1i5")]([ExtResource("16_qm1i5"), ExtResource("20_rock"), ExtResource("17_flwqg")])
+starter_items = Array[ExtResource("15_qm1i5")]([ExtResource("22_rock"), ExtResource("17_bread")])
 
 [node name="ChestObject2" parent="Interactables" unique_id=856623741 instance=ExtResource("5_b73po")]
 transform = Transform3D(0.999992, 0, 0.00403154, 0, 1, 0, -0.00403154, 0, 0.999992, -33.5677, 7.01364, 2.35008)
@@ -368,11 +370,11 @@ ladder_height = 4.5
 
 [node name="LadderCol" parent="Interactables/Ladder" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 0)
-shape = SubResource("BoxShape3D_flwqg")
+shape = SubResource("BoxShape3D_5hb6y")
 
 [node name="Visual" parent="Interactables/Ladder/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_rfg2k")
-surface_material_override/0 = SubResource("StandardMaterial3D_ylhxw")
+mesh = SubResource("QuadMesh_qm1i5")
+surface_material_override/0 = SubResource("StandardMaterial3D_flwqg")
 
 [node name="Ladder2" parent="Interactables" unique_id=743881373 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -13.954, 0.082, 29.509)
@@ -381,11 +383,11 @@ collision_mask = 2
 
 [node name="LadderCol" parent="Interactables/Ladder2" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-shape = SubResource("BoxShape3D_rki70")
+shape = SubResource("BoxShape3D_rfg2k")
 
 [node name="Visual" parent="Interactables/Ladder2/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_fwb4t")
-surface_material_override/0 = SubResource("StandardMaterial3D_3yhsj")
+mesh = SubResource("QuadMesh_ylhxw")
+surface_material_override/0 = SubResource("StandardMaterial3D_rki70")
 
 [node name="Ladder5" parent="Interactables" unique_id=88960211 instance=ExtResource("4_a4kod")]
 transform = Transform3D(7.54979e-08, 0, -1, 0, 1, 0, 1, 0, 7.54979e-08, -13.812, 0, 1.5)
@@ -394,11 +396,11 @@ collision_mask = 2
 
 [node name="LadderCol" parent="Interactables/Ladder5" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-shape = SubResource("BoxShape3D_r4c5v")
+shape = SubResource("BoxShape3D_fwb4t")
 
 [node name="Visual" parent="Interactables/Ladder5/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_l52tn")
-surface_material_override/0 = SubResource("StandardMaterial3D_vgws4")
+mesh = SubResource("QuadMesh_3yhsj")
+surface_material_override/0 = SubResource("StandardMaterial3D_r4c5v")
 
 [node name="StaticBody3D" parent="Interactables/Ladder5" unique_id=756947520 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-4.3711402e-08, 0, 1, 0, 1, 0, -1, 0, -4.3711402e-08, 18.3, 0, 52.752)
@@ -424,11 +426,11 @@ collision_mask = 2
 
 [node name="LadderCol" parent="Interactables/Ladder3" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
-shape = SubResource("BoxShape3D_4l0xh")
+shape = SubResource("BoxShape3D_l52tn")
 
 [node name="Visual" parent="Interactables/Ladder3/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_67m3d")
-surface_material_override/0 = SubResource("StandardMaterial3D_yvvfs")
+mesh = SubResource("QuadMesh_vgws4")
+surface_material_override/0 = SubResource("StandardMaterial3D_4l0xh")
 
 [node name="Ladder4" parent="Interactables" unique_id=2095761940 instance=ExtResource("4_a4kod")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, -65.4717, 0.0596613, 19.9143)
@@ -438,11 +440,11 @@ ladder_height = 50.0
 
 [node name="LadderCol" parent="Interactables/Ladder4" index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 25, 0)
-shape = SubResource("BoxShape3D_v6xu0")
+shape = SubResource("BoxShape3D_67m3d")
 
 [node name="Visual" parent="Interactables/Ladder4/LadderCol" index="0"]
-mesh = SubResource("QuadMesh_1axmg")
-surface_material_override/0 = SubResource("StandardMaterial3D_mvlo2")
+mesh = SubResource("QuadMesh_yvvfs")
+surface_material_override/0 = SubResource("StandardMaterial3D_v6xu0")
 
 [node name="ControlCard" type="Control" parent="." unique_id=1053931259]
 layout_mode = 3

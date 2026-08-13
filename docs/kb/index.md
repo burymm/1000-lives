@@ -10,6 +10,7 @@
 | [architecture.md](architecture.md) | Движок, запуск, autoload, сцены, структура каталогов |
 | [systems-map.md](systems-map.md) | Карта файлов по системам: где что лежит |
 | [item-inventory.md](item-inventory.md) | Предметы, инвентарь, экипировка, сундуки, drag&drop в UI |
+| [energy.md](energy.md) | Энергия игрока: масса, расход, пороги, отдых (R), еда, chest_editor |
 | [level.md](level.md) | Структура уровня (террейн GridMap, контент, окружение) и как его редактировать |
 | [conventions.md](conventions.md) | Соглашения проекта (git, качество кода, именование) |
 

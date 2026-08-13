@@ -19,6 +19,15 @@ var dialog: EditorFileDialog
 var dialog_attached := false
 var dialog_index := -1
 
+## Currently selected slot index (-1 = none). The weight/energy/digest spinboxes
+## edit that slot's item in place (items are scene-local copies, see
+## _make_local_copy).
+var selected_index := -1
+var _loading_props := false
+var weight_spin: SpinBox
+var energy_spin: SpinBox
+var digest_spin: SpinBox
+
 ## Draws the 5x5 cell lines and item rectangles; transparent buttons on top
 ## handle clicks and drops.
 class GridCanvas extends Control:
@@ -74,7 +83,75 @@ func _ready() -> void:
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(hint)
 
+	var props_box := VBoxContainer.new()
+	props_box.add_theme_constant_override("separation", 4)
+	add_child(props_box)
+	var props_title := Label.new()
+	props_title.text = "Selected item"
+	props_title.add_theme_font_size_override("font_size", 13)
+	props_box.add_child(props_title)
+	weight_spin = _add_spin_prop(props_box, "Weight (kg)", 0.0, 100000.0, 0.1)
+	energy_spin = _add_spin_prop(props_box, "Energy", 0.0, 100000.0, 1.0)
+	digest_spin = _add_spin_prop(props_box, "Digest time (s)", 0.0, 3600.0, 0.1)
+
 	_rebuild_items()
+
+func _add_spin_prop(_parent: Node, _title: String, _min: float, _max: float, _step: float) -> SpinBox:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	_parent.add_child(row)
+	var label := Label.new()
+	label.text = _title
+	label.custom_minimum_size = Vector2(120, 0)
+	row.add_child(label)
+	var spin := SpinBox.new()
+	spin.min_value = _min
+	spin.max_value = _max
+	spin.step = _step
+	spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spin.value_changed.connect(_on_prop_changed.bind(spin))
+	row.add_child(spin)
+	return spin
+
+func _item_at(_index: int) -> ItemResource:
+	if chest == null or _index < 0 or _index >= chest.starter_items.size():
+		return null
+	return chest.starter_items[_index]
+
+func _select_slot(_index: int) -> void:
+	if _index < 0 or _item_at(_index) == null:
+		selected_index = -1
+	else:
+		selected_index = _index
+	for i in item_buttons.size():
+		if is_instance_valid(item_buttons[i]):
+			item_buttons[i].modulate = Color(1.3, 1.3, 0.9) if i == selected_index else Color.WHITE
+	var item := _item_at(selected_index)
+	if weight_spin == null:
+		return
+	_loading_props = true
+	weight_spin.editable = item != null
+	energy_spin.editable = item != null
+	digest_spin.editable = item != null
+	if item:
+		weight_spin.value = item.weight
+		energy_spin.value = item.energy
+		digest_spin.value = item.digest_time
+	_loading_props = false
+
+func _on_prop_changed(_value: float, _spin: SpinBox) -> void:
+	if _loading_props:
+		return
+	var item := _item_at(selected_index)
+	if item == null:
+		return
+	if _spin == weight_spin:
+		item.weight = _value
+	elif _spin == energy_spin:
+		item.energy = _value
+	elif _spin == digest_spin:
+		item.digest_time = _value
+	_mark_dirty()
 
 func _exit_tree() -> void:
 	if dialog != null and dialog_attached and is_instance_valid(dialog):
@@ -124,7 +201,7 @@ func _rebuild_items() -> void:
 		var h := placed.inv_height * CELL + (placed.inv_height - 1) * GAP
 		btn.custom_minimum_size = Vector2(w, h)
 		btn.size = Vector2(w, h)
-		btn.pressed.connect(_on_replace_pressed.bind(i))
+		btn.pressed.connect(_on_item_clicked.bind(i))
 		btn.gui_input.connect(_on_item_gui_input.bind(i))
 		btn.set_drag_forwarding(Callable(), _can_drop_files.bind(i), _drop_files.bind(i))
 		grid_area.add_child(btn)
@@ -133,16 +210,23 @@ func _rebuild_items() -> void:
 	grid_canvas.queue_redraw()
 	if overflow > 0:
 		status_label.text = "%d item(s) don't fit in the 5x5 grid." % overflow
+	_select_slot(selected_index)
 
 func _on_add_pressed() -> void:
 	_open_dialog(-1)
 
-func _on_replace_pressed(_index: int) -> void:
-	_open_dialog(_index)
+## Left-click selects the slot so its weight/energy/digest_time can be edited
+## in the spinboxes below the grid. Replacing an item still works via
+## drag-and-drop or a double-click.
+func _on_item_clicked(_index: int) -> void:
+	_select_slot(_index)
 
 func _on_item_gui_input(event: InputEvent, _index: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		_remove_item(_index)
+		accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
+		_open_dialog(_index)
 		accept_event()
 
 func _open_dialog(_index: int) -> void:
@@ -213,21 +297,34 @@ func _set_at(_index: int, _res: ItemResource) -> void:
 	if chest == null:
 		return
 	var arr: Array[ItemResource] = chest.starter_items.duplicate()
+	var copy := _make_local_copy(_res)
 	if _index >= arr.size():
-		arr.append(_res)
+		arr.append(copy)
 	else:
-		arr[_index] = _res
+		arr[_index] = copy
 	chest.starter_items = arr
 
 func _append(_res: ItemResource) -> void:
 	if chest == null:
 		return
 	var arr: Array[ItemResource] = chest.starter_items.duplicate()
-	arr.append(_res)
+	arr.append(_make_local_copy(_res))
 	chest.starter_items = arr
 
-func _after_change() -> void:
+## Items placed in a chest keep their own independent copy (resource_local_to_scene)
+## so that energy / digest_time / weight can be tweaked per chest item from the
+## map editor without affecting the shared .tres the copy came from. See
+## tasks/task5.md ("Редактор карт (chest_editor)").
+func _make_local_copy(_res: ItemResource) -> ItemResource:
+	var copy: ItemResource = _res.clone_item()
+	copy.resource_local_to_scene = true
+	return copy
+
+func _mark_dirty() -> void:
 	if chest != null:
 		chest.notify_property_list_changed()
 	EditorInterface.mark_scene_as_unsaved()
+
+func _after_change() -> void:
+	_mark_dirty()
 	_rebuild_items()

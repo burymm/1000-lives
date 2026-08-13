@@ -58,6 +58,49 @@ func add_item_at(_new_item: ItemResource, _x: int, _y: int) -> bool:
 	inventory_updated.emit(inventory)
 	return true
 
+## Moves the item at `_index` to cell (_x, _y). Succeeds when the target is
+## free; when it is occupied by exactly one other item, the two swap cells if
+## the other item fits at the source cell. Returns false (unchanged) otherwise.
+func move_item(_index: int, _x: int, _y: int) -> bool:
+	if _index < 0 or _index >= inventory.size():
+		return false
+	var item = inventory[_index]
+	# Dropping back onto a part of the item itself is a no-op.
+	if _x >= item.grid_x and _x < item.grid_x + item.inv_width \
+		and _y >= item.grid_y and _y < item.grid_y + item.inv_height:
+		return true
+	if can_place_at(item, _x, _y):
+		item.grid_x = _x
+		item.grid_y = _y
+		inventory_updated.emit(inventory)
+		return true
+	var occupants : Array = []
+	for entry in inventory:
+		if entry != item and _rects_overlap(entry, _x, _y, item.inv_width, item.inv_height):
+			occupants.append(entry)
+	if occupants.size() != 1:
+		return false
+	var other = occupants[0]
+	var fits_at_source := true
+	for entry in inventory:
+		if entry == item or entry == other:
+			continue
+		if _rects_overlap(entry, item.grid_x, item.grid_y, other.inv_width, other.inv_height):
+			fits_at_source = false
+			break
+	if not fits_at_source:
+		return false
+	if item.grid_x + other.inv_width > inv_columns or item.grid_y + other.inv_height > inv_rows:
+		return false
+	var old_x : int = item.grid_x
+	var old_y : int = item.grid_y
+	other.grid_x = old_x
+	other.grid_y = old_y
+	item.grid_x = _x
+	item.grid_y = _y
+	inventory_updated.emit(inventory)
+	return true
+
 func _cells_used() -> int:
 	var used := 0
 	for entry in inventory:

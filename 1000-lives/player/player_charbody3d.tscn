@@ -1,6 +1,7 @@
-[gd_scene load_steps=256 format=3 uid="uid://bn7vh6v8mmgja"]
+[gd_scene load_steps=257 format=3 uid="uid://bn7vh6v8mmgja"]
 
 [ext_resource type="Script" path="res://player/player_charbody3D.gd" id="1_4per7"]
+[ext_resource type="Script" path="res://player/energy_system.gd" id="46_engsys"]
 [ext_resource type="PackedScene" path="res://ui/player_menu.tscn" id="40_menu"]
 [ext_resource type="PackedScene" uid="uid://bffefrgxjb4sc" path="res://assets/characters/minnyquinn.glb" id="2_74vsj"]
 [ext_resource type="AnimationLibrary" uid="uid://d3h8qu2uqwwdf" path="res://player/animation_libraries/MeleeLib.res" id="3_8tvpy"]
@@ -1655,7 +1656,7 @@ material = SubResource("StandardMaterial3D_ygg1y")
 size = Vector2(0.02, 0.02)
 orientation = 2
 
-[node name="PlayerCharacterBodySoulsBase" type="CharacterBody3D" node_paths=PackedStringArray("animation_tree", "weapon_system", "gadget_system", "health_system", "inventory_system", "item_system", "player_menu") groups=["player"]]
+[node name="PlayerCharacterBodySoulsBase" type="CharacterBody3D" node_paths=PackedStringArray("animation_tree", "weapon_system", "gadget_system", "health_system", "energy_system", "inventory_system", "item_system", "player_menu") groups=["player"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.38419e-07, 0)
 collision_layer = 2
 collision_mask = 3
@@ -1666,6 +1667,7 @@ animation_tree = NodePath("AnimStateTree")
 weapon_system = NodePath("WeaponSystem")
 gadget_system = NodePath("GadgetSystem")
 health_system = NodePath("HealthSystem")
+energy_system = NodePath("EnergySystem")
 inventory_system = NodePath("InventorySystem")
 item_system = NodePath("ItemSystem")
 player_menu = NodePath("GUI/PlayerMenu")
@@ -2149,6 +2151,24 @@ text = "Press E to pick up"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="RestLabel" type="Label" parent="GUI"]
+visible = false
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 96
+text = "REST"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="SignalSwitch" type="Node" parent="GUI" node_paths=PackedStringArray("signaling_node")]
 script = ExtResource("17_xborg")
 signaling_node = NodePath("../..")
@@ -2172,6 +2192,11 @@ starting_shield = ExtResource("43_shield")
 script = ExtResource("41_x7csm")
 hit_reporting_node = NodePath("..")
 heal_reporting_node = NodePath("..")
+
+[node name="EnergySystem" type="Node" parent="." node_paths=PackedStringArray("player_node", "inventory_system")]
+script = ExtResource("46_engsys")
+player_node = NodePath("..")
+inventory_system = NodePath("../InventorySystem")
 
 [node name="TriggeredSounds" type="Node" parent="."]
 
